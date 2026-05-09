@@ -1,0 +1,84 @@
+/* resources/css/app.css */
+@import "tailwindcss";
+
+/* Custom CSS untuk Frontend DPRD Tapsel */
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: #FFFFFF;
+    color: #334155;
+}
+
+/* Navigasi */
+.nav-link {
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+    transition: all 0.3s ease;
+    position: relative;
+}
+.nav-link:hover {
+    color: #2563eb;
+}
+.nav-link.active {
+    color: #2563eb;
+}
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #2563eb;
+}
+
+/* Kartu Anggota */
+.member-card {
+    border: 1px solid #f1f5f9;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+}
+.member-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+.member-image {
+    height: 280px;
+    width: 100%;
+    object-fit: cover;
+}
+
+/* Badge & Kategori */
+.badge-category {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: white;
+}
+.bg-pimpinan { background-color: #2563eb; }
+.bg-komisi { background-color: #1d4ed8; }
+
+/* Warna Custom */
+.text-primary-blue { color: #2563eb; }
+.bg-dark-footer { background-color: #1e3a8a; }
+.bg-copyright { background-color: #0f172a; }
+
+/* Input Pencarian */
+.search-input {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 16px;
+    width: 100%;
+    outline: none;
+}
+.search-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
