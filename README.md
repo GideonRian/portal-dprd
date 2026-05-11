@@ -42,18 +42,26 @@ git clone [https://github.com/username/repo-aspirasi-dprd.git](https://github.co
 # 2. Masuk ke direktori proyek
 cd repo-aspirasi-dprd
 
-# 3. Instal semua dependensi PHP via Composer
+# Instal library PHP
 composer install
 
-# 4. Salin file environment dan generate application key
+# Instal paket JavaScript & Kompilasi Aset
+npm install
+npm run build
+
+# Untuk Linux/Mac/Git Bash
 cp .env.example .env
+
+# Untuk Windows CMD
+copy .env.example .env
+
 php artisan key:generate
 
 # 5. Konfigurasi Database di file .env
 # DB_CONNECTION=mysql
 # DB_HOST=127.0.0.1
 # DB_PORT=3306
-# DB_DATABASE=nama_database_kamu
+# DB_DATABASE=portal_dprd
 # DB_USERNAME=root
 # DB_PASSWORD=
 
