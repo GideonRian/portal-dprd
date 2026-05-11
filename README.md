@@ -1,66 +1,64 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<div align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=250&section=header&text=Portal%20Aspirasi%20DPRD&fontSize=50&fontAlignY=35" alt="Header Banner">
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+  # 🏛️ Sistem Informasi Aspirasi Masyarakat - DPRD Tapanuli Selatan
+  
+  **Membangun Jembatan Digital antara Masyarakat dan Wakil Rakyat** 🌉
 
-## About Laravel
+  [![Laravel 12](https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
+  [![MySQL](https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
+  [![PHP](https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net/)
+</div>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 📖 Tentang Proyek
+Sistem Informasi ini merupakan inisiatif *E-Government* yang dirancang khusus untuk Dewan Perwakilan Rakyat Daerah (DPRD) Tapanuli Selatan. Platform ini memfasilitasi transparansi dan komunikasi dua arah, memungkinkan masyarakat untuk mengajukan aspirasi, keluhan, atau saran secara digital, sekaligus memantau sejauh mana aspirasi tersebut diproses oleh dewan.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## ✨ Fitur Unggulan
 
-## Learning Laravel
+- 📢 **Submission Aspirasi Publik**: Antarmuka responsif bagi masyarakat untuk mengirimkan aspirasi dengan cepat.
+- ⏳ **Timeline Perkembangan Terperinci**: Pelacakan status aspirasi yang sangat transparan. Masyarakat dapat melihat log pembaruan secara *real-time* (Contoh: *"11 May 2026 - Aspirasi diterima dan sedang menunggu peninjauan oleh tim sekretariat"*).
+- 🔐 **Sistem Keamanan Berlapis**: Dilengkapi dengan arsitektur *Role-Based Access Control* (RBAC), *Least Privilege*, serta Autentikasi Dua Faktor (2FA) untuk mengamankan data pengguna dan dashboard administrator.
+- 📊 **Dashboard Analitik (Admin)**: Ringkasan data sentimen dan kategori aspirasi untuk membantu dewan mengambil keputusan berbasis data.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 🛠️ Tech Stack & Infrastruktur
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Sistem ini dibangun dengan arsitektur modern untuk memastikan skalabilitas dan keamanan tingkat tinggi:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- **Backend**: PHP 8.x, Laravel 12
+- **Database**: MySQL
+- **Frontend**: Blade Templating (dengan integrasi responsif)
+- **Deployment/DevOps**: Mendukung kontainerisasi menggunakan Docker / Podman.
 
-## Laravel Sponsors
+## 🚀 Panduan Instalasi (Local Development)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Ikuti langkah-langkah di bawah ini untuk menjalankan proyek secara lokal menggunakan Laragon atau *local server* pilihanmu.
 
-### Premium Partners
+```bash
+# 1. Clone repositori ini
+git clone [https://github.com/username/repo-aspirasi-dprd.git](https://github.com/username/repo-aspirasi-dprd.git)
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+# 2. Masuk ke direktori proyek
+cd repo-aspirasi-dprd
 
-## Contributing
+# 3. Instal semua dependensi PHP via Composer
+composer install
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# 4. Salin file environment dan generate application key
+cp .env.example .env
+php artisan key:generate
 
-## Code of Conduct
+# 5. Konfigurasi Database di file .env
+# DB_CONNECTION=mysql
+# DB_HOST=127.0.0.1
+# DB_PORT=3306
+# DB_DATABASE=nama_database_kamu
+# DB_USERNAME=root
+# DB_PASSWORD=
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# 6. Jalankan Migrasi dan Seeder (jika ada)
+php artisan migrate --seed
 
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# 7. Jalankan local development server
+php artisan serve
