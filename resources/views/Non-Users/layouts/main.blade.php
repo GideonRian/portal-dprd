@@ -13,7 +13,8 @@
     
     @vite(['resources/css/Non-Users/app.css', 'resources/js/Non-Users/app.js'])
 </head>
-<body>
+<!--  kami gunakan flex flex-col min-h-screen untuk memaksa halaman agar selalu membentang minimal seukuran tinggi layar perangkat-->
+<body class="font-sans antialiased text-gray-900 flex flex-col min-h-screen">
 
     <nav class="bg-white border-b border-gray-100 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -41,9 +42,12 @@
         </div>
     </nav>
 
-    @yield('content')
-
-    <footer class="bg-dark-footer text-white pt-16 pb-8">
+    <!-- 2. WRAPPER KONTEN, menambah main dengan class flex-grow guna bertugas mendorong sisa 
+        area kosong agar footer selalu dipaksa ke paling bawah-->
+    <main class="flex-grow">
+        @yield('content')
+    </main>
+    <footer class="bg-dark-footer text-white pt-16 mt-auto">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
                 <div>
@@ -83,12 +87,13 @@
                 </div>
             </div>
         </div>
-        <div class="bg-copyright py-6 mt-12">
+        
+        <div class="bg-copyright py-6 mt-12 border-t border-white/5">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-400">
                 <p>© 2026 DPRD Tapanuli Selatan. Hak Cipta Dilindungi Undang-Undang.</p>
                 <div class="flex space-x-6 mt-4 md:mt-0">
-                    <a href="https://tapselkab.go.id/" class="hover:text-white">Pemerintah Tapsel <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-[10px]"></i></a>
-                    <a href="https://indonesia.go.id/" class="hover:text-white">Portal Nasional <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-[10px]"></i></a>
+                    <a href="https://tapselkab.go.id/" class="hover:text-white transition-colors">Pemerintah Tapsel <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-[10px]"></i></a>
+                    <a href="https://indonesia.go.id/" class="hover:text-white transition-colors">Portal Nasional <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-[10px]"></i></a>
                 </div>
             </div>
         </div>

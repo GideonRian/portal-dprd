@@ -1,190 +1,192 @@
 @extends('Non-Users.layouts.main')
 
-@section('title', 'Detail Agenda')
+@section('title', $agenda->judul)
 
 @section('content')
-<style>
-    body { background-color: #f8fafc; }
-</style>
+    @php
+        function tanggalIndo($tanggal)
+        {
+            $hari_array = [
+                'Sunday' => 'Minggu',
+                'Monday' => 'Senin',
+                'Tuesday' => 'Selasa',
+                'Wednesday' => 'Rabu',
+                'Thursday' => 'Kamis',
+                'Friday' => 'Jumat',
+                'Saturday' => 'Sabtu',
+            ];
+            $bulan_array = [
+                1 => 'Januari',
+                2 => 'Februari',
+                3 => 'Maret',
+                4 => 'April',
+                5 => 'Mei',
+                6 => 'Juni',
+                7 => 'Juli',
+                8 => 'Agustus',
+                9 => 'September',
+                10 => 'Oktober',
+                11 => 'November',
+                12 => 'Desember',
+            ];
+            $waktu = strtotime($tanggal);
+            return $hari_array[date('l', $waktu)] .
+                ', ' .
+                date('j', $waktu) .
+                ' ' .
+                $bulan_array[(int) date('n', $waktu)] .
+                ' ' .
+                date('Y', $waktu);
+        }
+    @endphp
 
-<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 pb-20">
-    
-    <a href="{{ route('agenda') }}" class="inline-flex items-center text-gray-600 hover:text-blue-600 font-medium mb-6 transition group">
-        <i class="fa-solid fa-arrow-left mr-2 transform group-hover:-translate-x-1 transition"></i> Kembali ke Agenda
-    </a>
+    <style>
+        body {
+            background-color: #f8fafc;
+        }
+    </style>
 
-    <div class="relative w-full h-[300px] md:h-[400px] rounded-3xl overflow-hidden shadow-lg mb-8">
-        <img src="https://images.unsplash.com/photo-1556761175-5973dc0f32d7?q=80&w=1200&auto=format&fit=crop" alt="Rapat Paripurna" class="w-full h-full object-cover">
-        
-        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
-        
-        <div class="absolute top-6 right-6 bg-blue-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-md">
-            Rapat Paripurna
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 pb-20">
+
+        <a href="{{ route('publik.agenda') }}"
+            class="inline-flex items-center text-gray-600 hover:text-orange-600 font-medium mb-6 transition group">
+            <i class="fa-solid fa-arrow-left mr-2 transform group-hover:-translate-x-1 transition"></i> Kembali ke Agenda
+        </a>
+
+        <!-- Banner Agenda -->
+        <div class="relative w-full h-[300px] md:h-[400px] rounded-3xl overflow-hidden shadow-lg mb-8">
+            @if ($agenda->gambar)
+                <img src="{{ asset('storage/' . $agenda->gambar) }}" class="w-full h-full object-cover">
+            @else
+                <div class="w-full h-full bg-orange-100 flex items-center justify-center">
+                    <i class="fa-regular fa-calendar-check text-8xl text-orange-200"></i>
+                </div>
+            @endif
+
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+
+            <div
+                class="absolute top-6 right-6 bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-md uppercase tracking-wider">
+                {{ $agenda->kategori }}
+            </div>
+
+            <div class="absolute bottom-0 left-0 w-full p-6 md:p-10 text-white">
+                <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight drop-shadow-md">{{ $agenda->judul }}
+                </h1>
+            </div>
         </div>
 
-        <div class="absolute bottom-0 left-0 w-full p-6 md:p-10 text-white">
-            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight drop-shadow-md">Rapat Paripurna Pembahasan APBD 2027</h1>
-        </div>
-    </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        <div class="lg:col-span-2 space-y-6">
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- Informasi Utama -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
+                        <div
+                            class="w-14 h-14 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+                            <i class="fa-regular fa-calendar-check"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 font-medium mb-1">Tanggal</p>
+                            <p class="text-base font-bold text-gray-900">{{ tanggalIndo($agenda->tanggal) }}</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
+                        <div
+                            class="w-14 h-14 bg-orange-50 text-orange-500 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+                            <i class="fa-regular fa-clock"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 font-medium mb-1">Waktu</p>
+                            <p class="text-base font-bold text-gray-900">{{ $agenda->waktu }}</p>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
-                    <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
-                        <i class="fa-regular fa-calendar-check"></i>
+                    <div
+                        class="w-14 h-14 bg-green-50 text-green-600 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+                        <i class="fa-solid fa-location-dot"></i>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-500 font-medium mb-1">Tanggal</p>
-                        <p class="text-base font-bold text-gray-900">Sabtu, 28 Maret 2026</p>
+                        <p class="text-xs text-gray-500 font-medium mb-1">Lokasi</p>
+                        <p class="text-base font-bold text-gray-900">{{ $agenda->lokasi }}</p>
                     </div>
                 </div>
-                
+
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
-                    <div class="w-14 h-14 bg-orange-50 text-orange-500 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
-                        <i class="fa-regular fa-clock"></i>
+                    <div
+                        class="w-14 h-14 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+                        <i class="fa-solid fa-user-group"></i>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-500 font-medium mb-1">Waktu</p>
-                        <p class="text-base font-bold text-gray-900">09:00 - 12:00 WIB</p>
+                        <p class="text-xs text-gray-500 font-medium mb-1">Peserta</p>
+                        <p class="text-base font-bold text-gray-900">{{ $agenda->peserta }}</p>
                     </div>
                 </div>
+
+                <!-- Deskripsi -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4 border-l-4 border-orange-500 pl-4">Deskripsi Kegiatan
+                    </h2>
+                    <div class="text-gray-600 leading-relaxed text-sm md:text-base">
+                        {!! nl2br(e($agenda->deskripsi)) !!}
+                    </div>
+                </div>
+
+                <!-- Susunan Acara (Dinamis dari Baris Baru) -->
+                @if ($agenda->susunan_acara)
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+                        <h2 class="text-xl font-bold text-gray-900 mb-6">Susunan Acara</h2>
+                        <div class="space-y-4">
+                            @php
+                                // Memecah teks berdasarkan baris baru
+                                $poin_acara = explode("\n", str_replace("\r", '', $agenda->susunan_acara));
+                            @endphp
+                            @foreach ($poin_acara as $index => $poin)
+                                @if (trim($poin) !== '')
+                                    <div
+                                        class="flex items-center gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100 group hover:bg-orange-50 transition">
+                                        <div
+                                            class="w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
+                                            {{ $index + 1 }}
+                                        </div>
+                                        <p class="text-gray-800 font-medium text-sm">{{ trim($poin) }}</p>
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
             </div>
 
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
-                <div class="w-14 h-14 bg-green-50 text-green-600 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
-                    <i class="fa-solid fa-location-dot"></i>
-                </div>
-                <div>
-                    <p class="text-xs text-gray-500 font-medium mb-1">Lokasi</p>
-                    <p class="text-base font-bold text-gray-900">Ruang Paripurna Utama DPRD Tapsel</p>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4">
-                <div class="w-14 h-14 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
-                    <i class="fa-solid fa-user-group"></i>
-                </div>
-                <div>
-                    <p class="text-xs text-gray-500 font-medium mb-1">Peserta</p>
-                    <p class="text-base font-bold text-gray-900">Seluruh Anggota DPRD, Bupati, dan Tim Eksekutif</p>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                <h2 class="text-xl font-bold text-gray-900 mb-4">Deskripsi</h2>
-                <p class="text-gray-600 leading-relaxed text-sm md:text-base">
-                    Pembahasan dan persetujuan Anggaran Pendapatan dan Belanja Daerah tahun anggaran 2027. Rapat ini merupakan agenda penting dalam menentukan arah kebijakan pembangunan daerah untuk tahun mendatang. Rapat akan dipimpin langsung oleh Ketua DPRD dan dihadiri oleh seluruh fraksi untuk memberikan pandangan umumnya.
-                </p>
-            </div>
-
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                <h2 class="text-xl font-bold text-gray-900 mb-6">Susunan Acara</h2>
-                
-                <div class="space-y-4">
-                    <div class="flex items-center gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
-                        <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">1</div>
-                        <p class="text-gray-800 font-medium text-sm">Pembukaan oleh Ketua DPRD</p>
-                    </div>
-                    <div class="flex items-center gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
-                        <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">2</div>
-                        <p class="text-gray-800 font-medium text-sm">Laporan Bupati tentang RAPBD 2027</p>
-                    </div>
-                    <div class="flex items-center gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
-                        <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">3</div>
-                        <p class="text-gray-800 font-medium text-sm">Pembahasan dan tanggapan fraksi-fraksi</p>
-                    </div>
-                    <div class="flex items-center gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
-                        <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">4</div>
-                        <p class="text-gray-800 font-medium text-sm">Kesimpulan dan keputusan</p>
-                    </div>
-                    <div class="flex items-center gap-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
-                        <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">5</div>
-                        <p class="text-gray-800 font-medium text-sm">Penutupan</p>
+            <!-- Sidebar -->
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-24">
+                    <h3 class="font-bold text-gray-900 mb-4">Agenda Terkait</h3>
+                    <div class="space-y-4">
+                        @forelse($related as $rel)
+                            <a href="{{ route('publik.agenda.detail', $rel->id) }}"
+                                class="block p-4 rounded-xl border border-gray-100 hover:border-orange-300 hover:shadow-md transition group">
+                                <h4
+                                    class="font-bold text-sm text-gray-900 mb-2 group-hover:text-orange-600 transition line-clamp-2">
+                                    {{ $rel->judul }}</h4>
+                                <div class="flex items-center justify-between">
+                                    <span
+                                        class="text-[10px] text-gray-500 font-medium">{{ tanggalIndo($rel->tanggal) }}</span>
+                                    <i class="fa-solid fa-angle-right text-gray-400 group-hover:text-orange-600"></i>
+                                </div>
+                            </a>
+                        @empty
+                            <p class="text-xs text-gray-400 italic">Tidak ada agenda terkait lainnya.</p>
+                        @endforelse
                     </div>
                 </div>
             </div>
 
         </div>
-
-        <div class="lg:col-span-1 space-y-6">
-            
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <h3 class="font-bold text-gray-900 mb-4">Aksi</h3>
-                <div class="space-y-3">
-                    <button class="w-full bg-[#2563eb] hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-sm">
-                        <i class="fa-solid fa-share-nodes"></i> Bagikan
-                    </button>
-                    <button class="w-full bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-bold py-3 px-4 rounded-xl transition flex items-center justify-center gap-2">
-                        <i class="fa-regular fa-calendar-plus"></i> Tambah ke Kalender
-                    </button>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <h3 class="font-bold text-gray-900 mb-4">Dokumen Terlampir</h3>
-                
-                <div class="space-y-3">
-                    <a href="#" class="flex items-center justify-between p-3 rounded-xl border border-gray-100 hover:border-red-200 hover:bg-red-50 transition group">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-red-100 text-red-500 rounded-lg flex items-center justify-center text-lg flex-shrink-0">
-                                <i class="fa-solid fa-file-pdf"></i>
-                            </div>
-                            <div>
-                                <p class="text-sm font-bold text-gray-900 leading-tight">Rancangan APBD 2027.pdf</p>
-                                <p class="text-xs text-gray-500">2.5 MB</p>
-                            </div>
-                        </div>
-                        <i class="fa-solid fa-download text-gray-400 group-hover:text-red-500 transition"></i>
-                    </a>
-                    
-                    <a href="#" class="flex items-center justify-between p-3 rounded-xl border border-gray-100 hover:border-red-200 hover:bg-red-50 transition group">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-red-100 text-red-500 rounded-lg flex items-center justify-center text-lg flex-shrink-0">
-                                <i class="fa-solid fa-file-pdf"></i>
-                            </div>
-                            <div>
-                                <p class="text-sm font-bold text-gray-900 leading-tight">Lampiran Teknis.pdf</p>
-                                <p class="text-xs text-gray-500">1.8 MB</p>
-                            </div>
-                        </div>
-                        <i class="fa-solid fa-download text-gray-400 group-hover:text-red-500 transition"></i>
-                    </a>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <h3 class="font-bold text-gray-900 mb-4">Agenda Terkait</h3>
-                
-                <div class="space-y-4">
-                    <a href="#" class="block p-4 rounded-xl border border-gray-100 hover:border-blue-300 hover:shadow-md transition group">
-                        <h4 class="font-bold text-sm text-gray-900 mb-2 group-hover:text-blue-600 transition">Hearing dengan Asosiasi Petani Tapanuli Selatan</h4>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs text-gray-500 font-medium">2026-03-30</span>
-                                <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Hearing</span>
-                            </div>
-                            <i class="fa-solid fa-angle-right text-gray-400 group-hover:text-blue-600"></i>
-                        </div>
-                    </a>
-
-                    <a href="#" class="block p-4 rounded-xl border border-gray-100 hover:border-blue-300 hover:shadow-md transition group">
-                        <h4 class="font-bold text-sm text-gray-900 mb-2 group-hover:text-blue-600 transition">Kunjungan Kerja ke Sipirok</h4>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs text-gray-500 font-medium">2026-04-05</span>
-                                <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Kunjungan Kerja</span>
-                            </div>
-                            <i class="fa-solid fa-angle-right text-gray-400 group-hover:text-blue-600"></i>
-                        </div>
-                    </a>
-                </div>
-            </div>
-
-        </div>
-
-    </div>
-</main>
+    </main>
 @endsection

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 
 class AnggotaController extends Controller
 {
-    // 1. Tampilkan Daftar Anggota (Read & Search)
+    // 1. Tampilkan Daftar Anggota
     public function index(Request $request)
     {
         $search = $request->input('search');
@@ -22,63 +22,98 @@ class AnggotaController extends Controller
         return view('Staff.Anggota.index', compact('anggotas', 'search'));
     }
 
-    // 2. Tampilkan Form Tambah (Create)
+    // 2. Tampilkan Form Tambah
     public function create()
     {
         return view('Staff.Anggota.create');
     }
 
-    // 3. Simpan Data Baru (Store)
+    // 3. Simpan Data Baru
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'nama' => 'required|string',
-            'jabatan' => 'required|string',
-            'partai' => 'required|string',
-            'komisi' => 'required|string',
-            'badan' => 'nullable|string',
-            'dapil' => 'required|string',
-            'telepon' => 'nullable|string',
-            'email' => 'nullable|email',
-            'foto' => 'nullable|image|max:2048' // Maksimal 2MB
+        // 1. Validasi semua input (termasuk yang baru)
+        $validated = $request->validate([
+            'nama'                => 'required|string|max:255',
+            'jabatan'             => 'required|string|max:255',
+            'partai'              => 'required|string|max:255',
+            'dapil'               => 'required|string|max:255',
+            'komisi'              => 'nullable|string',
+            'jabatan_komisi'      => 'nullable|string',
+            'badan'               => 'nullable|string',
+            'jabatan_badan'       => 'nullable|string',
+            'tanggal_lahir'       => 'nullable|date',
+            'telepon'             => 'nullable|string',
+            'email'               => 'nullable|email',
+            'riwayat_pendidikan'  => 'nullable|string',
+            'riwayat_pekerjaan'   => 'nullable|string',
+            'riwayat_penghargaan' => 'nullable|string',
+            'foto'                => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
+        // 2. Proses upload foto jika ada
         if ($request->hasFile('foto')) {
-            $data['foto'] = $request->file('foto')->store('profil_anggota', 'public');
+            $validated['foto'] = $request->file('foto')->store('anggota_fotos', 'public');
         }
 
-        Anggota::create($data);
-        return redirect()->route('staff.anggota.index')->with('success', 'Data anggota berhasil ditambahkan!');
+        // 3. Simpan ke database
+        Anggota::create($validated);
+
+        return redirect()->route('staff.anggota.index')->with('success', 'Data Anggota berhasil ditambahkan!');
     }
 
-    // 4. Tampilkan Form Edit (Edit)
+    // 4. Tampilkan Form Edit
     public function edit($id)
     {
         $anggota = Anggota::findOrFail($id);
         return view('Staff.Anggota.edit', compact('anggota'));
     }
 
-    // 5. Simpan Perubahan (Update)
+    // 5. Simpan Perubahan
     public function update(Request $request, $id)
     {
         $anggota = Anggota::findOrFail($id);
-        $data = $request->except(['_token', '_method']);
 
+        // 1. Validasi semua input
+        $validated = $request->validate([
+            'nama'                => 'required|string|max:255',
+            'jabatan'             => 'required|string|max:255',
+            'partai'              => 'required|string|max:255',
+            'dapil'               => 'required|string|max:255',
+            'komisi'              => 'nullable|string',
+            'jabatan_komisi'      => 'nullable|string',
+            'badan'               => 'nullable|string',
+            'jabatan_badan'       => 'nullable|string',
+            'tanggal_lahir'       => 'nullable|date',
+            'telepon'             => 'nullable|string',
+            'email'               => 'nullable|email',
+            'riwayat_pendidikan'  => 'nullable|string',
+            'riwayat_pekerjaan'   => 'nullable|string',
+            'riwayat_penghargaan' => 'nullable|string',
+            'foto'                => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        // 2. Proses foto baru jika diupload
         if ($request->hasFile('foto')) {
             // Hapus foto lama jika ada
-            if ($anggota->foto) Storage::disk('public')->delete($anggota->foto);
-            $data['foto'] = $request->file('foto')->store('profil_anggota', 'public');
+            if ($anggota->foto && Storage::disk('public')->exists($anggota->foto)) {
+                Storage::disk('public')->delete($anggota->foto);
+            }
+            $validated['foto'] = $request->file('foto')->store('anggota_fotos', 'public');
         }
 
-        $anggota->update($data);
-        return redirect()->route('staff.anggota.index')->with('success', 'Data anggota berhasil diperbarui!');
+        // 3. Update database
+        $anggota->update($validated);
+
+        return redirect()->route('staff.anggota.index')->with('success', 'Data Anggota berhasil diperbarui!');
     }
 
-    // 6. Hapus Data (Delete)
+    // 6. Hapus Data
     public function destroy($id)
     {
         $anggota = Anggota::findOrFail($id);
-        if ($anggota->foto) Storage::disk('public')->delete($anggota->foto);
+        if ($anggota->foto) {
+            Storage::disk('public')->delete($anggota->foto);
+        }
         $anggota->delete();
         
         return redirect()->route('staff.anggota.index')->with('success', 'Data anggota berhasil dihapus!');
