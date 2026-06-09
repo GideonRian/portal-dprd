@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Aspirasi;
 use App\Models\AspirasiHistory;
+use App\Models\ActivityLog; // <-- TAMBAHAN: Import Model ActivityLog
 use Illuminate\Support\Facades\Auth;
 
 class AspirasiController extends Controller
@@ -52,7 +53,6 @@ class AspirasiController extends Controller
         return response()->json($aspirasi);
     }
 
-    // 3. Proses Update Status & Catat Riwayat (Sesuai Gambar 4)
     // 3. Proses Update Status & Catat Riwayat
     public function update(Request $request, $id)
     {
@@ -92,6 +92,10 @@ class AspirasiController extends Controller
             // Detektor otomatis: Menggunakan 'name' atau 'nama' sesuai struktur database Anda
             'user_name'   => Auth::check() ? (Auth::user()->name ?? Auth::user()->nama) : 'Admin DPRD'
         ]);
+
+        // <-- TAMBAHAN: Catat Log Aktivitas Staf untuk Dipantau Sekretaris
+        $nomorTiket = $aspirasi->tiket_id ?? $aspirasi->id;
+        ActivityLog::record('Aspirasi', 'Update', "Memperbarui status aspirasi (Tiket: {$nomorTiket}) menjadi: {$request->status}");
 
         return redirect()->route('staff.aspirasi.index')->with('success', 'Status aspirasi berhasil diperbarui dan dicatat ke riwayat!');
     }

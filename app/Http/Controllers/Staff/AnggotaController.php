@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Staff;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Anggota;
+use App\Models\ActivityLog; // <-- TAMBAHAN: Import Model ActivityLog
 use Illuminate\Support\Facades\Storage;
 
 class AnggotaController extends Controller
@@ -31,7 +32,6 @@ class AnggotaController extends Controller
     // 3. Simpan Data Baru
     public function store(Request $request)
     {
-        // 1. Validasi semua input (termasuk yang baru)
         $validated = $request->validate([
             'nama'                => 'required|string|max:255',
             'jabatan'             => 'required|string|max:255',
@@ -50,13 +50,14 @@ class AnggotaController extends Controller
             'foto'                => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        // 2. Proses upload foto jika ada
         if ($request->hasFile('foto')) {
             $validated['foto'] = $request->file('foto')->store('anggota_fotos', 'public');
         }
 
-        // 3. Simpan ke database
         Anggota::create($validated);
+
+        // <-- TAMBAHAN: Catat Log Tambah Data
+        ActivityLog::record('Anggota', 'Create', "Menambahkan profil anggota dewan: {$validated['nama']}");
 
         return redirect()->route('staff.anggota.index')->with('success', 'Data Anggota berhasil ditambahkan!');
     }
@@ -73,7 +74,6 @@ class AnggotaController extends Controller
     {
         $anggota = Anggota::findOrFail($id);
 
-        // 1. Validasi semua input
         $validated = $request->validate([
             'nama'                => 'required|string|max:255',
             'jabatan'             => 'required|string|max:255',
@@ -92,17 +92,17 @@ class AnggotaController extends Controller
             'foto'                => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        // 2. Proses foto baru jika diupload
         if ($request->hasFile('foto')) {
-            // Hapus foto lama jika ada
             if ($anggota->foto && Storage::disk('public')->exists($anggota->foto)) {
                 Storage::disk('public')->delete($anggota->foto);
             }
             $validated['foto'] = $request->file('foto')->store('anggota_fotos', 'public');
         }
 
-        // 3. Update database
         $anggota->update($validated);
+
+        // <-- TAMBAHAN: Catat Log Update Data
+        ActivityLog::record('Anggota', 'Update', "Memperbarui profil anggota dewan: {$validated['nama']}");
 
         return redirect()->route('staff.anggota.index')->with('success', 'Data Anggota berhasil diperbarui!');
     }
@@ -111,11 +111,16 @@ class AnggotaController extends Controller
     public function destroy($id)
     {
         $anggota = Anggota::findOrFail($id);
+        $namaAnggota = $anggota->nama; // Simpan nama sebelum dihapus untuk log
+
         if ($anggota->foto) {
             Storage::disk('public')->delete($anggota->foto);
         }
         $anggota->delete();
         
+        // <-- TAMBAHAN: Catat Log Hapus Data
+        ActivityLog::record('Anggota', 'Delete', "Menghapus data anggota dewan: {$namaAnggota}");
+
         return redirect()->route('staff.anggota.index')->with('success', 'Data anggota berhasil dihapus!');
     }
 }

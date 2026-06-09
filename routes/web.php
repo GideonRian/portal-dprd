@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth; // <-- TAMBAHAN IMPORT FACADE AUTH
 
 // ==========================================
 // IMPORT MODELS
@@ -14,7 +15,7 @@ use App\Models\Dokumen;
 // ==========================================
 // IMPORT CONTROLLERS (FRONTEND / NON-USER)
 // ==========================================
-use App\Http\Controllers\Frontend\PublicHomeController; // <-- JALUR SUDAH DIPERBAIKI KE FOLDER FRONTEND
+use App\Http\Controllers\Frontend\PublicHomeController;
 use App\Http\Controllers\Frontend\AspirasiController;
 use App\Http\Controllers\Frontend\BeritaController as FrontBeritaController;
 
@@ -28,6 +29,14 @@ use App\Http\Controllers\Staff\BeritaController as StaffBeritaController;
 use App\Http\Controllers\Staff\DashboardController;
 use App\Http\Controllers\Staff\DokumenController;
 
+// ==========================================
+// IMPORT CONTROLLERS (BACKEND / SEKRETARIS)
+// ==========================================
+use App\Http\Controllers\Sekretaris\DashboardController as SekretarisDashboardController;
+use App\Http\Controllers\Sekretaris\ActivityController;
+use App\Http\Controllers\Sekretaris\AuthController as SekretarisAuthController;
+
+
 /*
 |--------------------------------------------------------------------------
 | FRONTEND / NON-USER ROUTES (Area Publik)
@@ -36,7 +45,6 @@ use App\Http\Controllers\Staff\DokumenController;
 
 // --- Beranda ---
 Route::get('/', [PublicHomeController::class, 'index'])->name('home');
-
 
 // --- Halaman Statis & Profil ---
 Route::get('/tentang-dprd', function () {
@@ -54,7 +62,6 @@ Route::get('/profil-anggota', function (Illuminate\Http\Request $request) {
 
     $query = App\Models\Anggota::query();
 
-    // 1. Logic Pencarian (Nama, Dapil, Jabatan)
     if ($search) {
         $query->where(function($q) use ($search) {
             $q->where('nama', 'like', "%{$search}%")
@@ -63,17 +70,14 @@ Route::get('/profil-anggota', function (Illuminate\Http\Request $request) {
         });
     }
 
-    // 2. Logic Filter Komisi
     if ($komisi) {
         $query->where('komisi', $komisi);
     }
 
-    // 3. Logic Filter Badan
     if ($badan) {
         $query->where('badan', $badan);
     }
 
-    // 4. Logic Urutan (Ketua -> Wakil Ketua -> Anggota)
     $anggotas = $query->orderByRaw("CASE 
             WHEN jabatan LIKE '%Ketua%' AND jabatan NOT LIKE '%Wakil%' THEN 1 
             WHEN jabatan LIKE '%Wakil Ketua%' THEN 2 
@@ -81,7 +85,6 @@ Route::get('/profil-anggota', function (Illuminate\Http\Request $request) {
         ->orderBy('nama', 'asc')
         ->get();
 
-    // Ambil daftar unik komisi dan badan untuk dropdown filter
     $list_komisi = App\Models\Anggota::whereNotNull('komisi')->distinct()->pluck('komisi');
     $list_badan = App\Models\Anggota::whereNotNull('badan')->distinct()->pluck('badan');
 
@@ -102,25 +105,20 @@ Route::get('/pusat-dokumen', function () {
 
 // --- Agenda Publik ---
 Route::get('/agenda-kegiatan', function (Request $request) {
-    // Otomatisasi status jika tanggal sudah lewat
     Agenda::where('status', 'Akan Datang')
         ->where('tanggal', '<', now()->toDateString())
         ->update(['status' => 'Selesai']);
 
-    // Mulai Query
     $query = Agenda::latest('tanggal');
 
-    // Filter Pencarian (Kata Kunci)
     if ($request->filled('search')) {
         $query->where('judul', 'like', '%' . $request->search . '%');
     }
 
-    // Filter Kategori
     if ($request->filled('kategori') && $request->kategori !== '') {
         $query->where('kategori', $request->kategori);
     }
 
-    // Filter Bulan
     if ($request->filled('bulan') && $request->bulan !== '') {
         $query->whereMonth('tanggal', $request->bulan);
     }
@@ -131,7 +129,6 @@ Route::get('/agenda-kegiatan', function (Request $request) {
 
 Route::get('/agenda-kegiatan/{id}', function ($id) {
     $agenda = Agenda::findOrFail($id);
-    // Ambil 3 agenda lain sebagai agenda terkait
     $related = Agenda::where('id', '!=', $id)->limit(3)->latest()->get();
     
     return view('Non-Users.agenda-detail', compact('agenda', 'related'));
@@ -150,7 +147,6 @@ Route::get('/layanan-aspirasi/verifikasi', [AspirasiController::class, 'showOtpP
 Route::post('/layanan-aspirasi/verifikasi', [AspirasiController::class, 'verifyOtp'])->name('aspirasi.otp.verify');
 Route::get('/layanan-aspirasi/lacak', [AspirasiController::class, 'lacakIndex'])->name('layanan.aspirasi.lacak');
 Route::get('/layanan-aspirasi/lacak/cari', [AspirasiController::class, 'cariAspirasi'])->name('aspirasi.lacak.cari');
-// Route untuk mengirim rating penilaian
 Route::post('/layanan-aspirasi/lacak/{id}/rating', [\App\Http\Controllers\Frontend\AspirasiController::class, 'submitRating'])->name('aspirasi.lacak.rating');
 
 // --- Rute Penunjuk Jalan Default Laravel ---
@@ -158,44 +154,83 @@ Route::get('/login', function () {
     return redirect()->route('staff.login');
 })->name('login');
 
+
 /*
 |--------------------------------------------------------------------------
 | BACKEND / STAFF ROUTES (Area Admin)
 |--------------------------------------------------------------------------
 */
-
 Route::prefix('staff')->name('staff.')->group(function () {
     
-    // 1. RUTE GUEST (Hanya bisa diakses jika belum login)
+    // PERBAIKAN: Menggunakan Facade Auth::
+    Route::get('/', function () {
+        if (Auth::check()) {
+            return Auth::user()->role === 'staff' 
+                ? redirect()->route('staff.dashboard') 
+                : redirect()->route('sekretaris.dashboard');
+        }
+        return redirect()->route('staff.login');
+    });
+
+    // 1. RUTE GUEST
     Route::middleware('guest')->group(function () {
         Route::get('/login', [AuthController::class, 'index'])->name('login');
         Route::post('/login', [AuthController::class, 'authenticate'])->name('login.process');
     });
 
-    // 2. RUTE TERLINDUNGI (Wajib login untuk mengaksesnya)
-    Route::middleware('auth')->group(function () {
+    // 2. RUTE TERLINDUNGI
+    Route::middleware(['auth', 'role:staff,sekretaris'])->group(function () {
         
-        // Kelola Akun & Logout
         Route::get('/ganti-password', [AuthController::class, 'editPassword'])->name('password.edit');
         Route::put('/ganti-password', [AuthController::class, 'updatePassword'])->name('password.update');
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-        // Dashboard Staf
+        // Semua rute resource berita, dokumen, agenda, dll ada di sini...
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-        // Kelola Master Data (Resource)
         Route::resource('/anggota', AnggotaController::class)->names('anggota');
         Route::resource('/dokumen', DokumenController::class)->names('dokumen');
         Route::resource('/agenda', AgendaController::class)->names('agenda');
 
-        // Kelola Berita & Aksi Kustom
         Route::resource('/berita', StaffBeritaController::class)->names('berita');
         Route::patch('/berita/{id}/toggle-featured', [StaffBeritaController::class, 'toggleFeatured'])->name('berita.toggle_featured');
         
-        // Kelola Aspirasi (Staff)
         Route::get('/aspirasi', [\App\Http\Controllers\Staff\AspirasiController::class, 'index'])->name('aspirasi.index');
-        Route::get('/aspirasi/{id}', [\App\Http\Controllers\Staff\AspirasiController::class, 'show'])->name('aspirasi.show'); // Untuk AJAX Modal
+        Route::get('/aspirasi/{id}', [\App\Http\Controllers\Staff\AspirasiController::class, 'show'])->name('aspirasi.show');
         Route::put('/aspirasi/{id}/update', [\App\Http\Controllers\Staff\AspirasiController::class, 'update'])->name('aspirasi.update');
+    });
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| BACKEND / SEKRETARIS ROUTES (Area Sekretariat)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('sekretaris')->name('sekretaris.')->group(function () {
+    
+    // PERBAIKAN: Menggunakan Facade Auth::
+    Route::get('/', function () {
+        if (Auth::check()) {
+            return Auth::user()->role === 'sekretaris' 
+                ? redirect()->route('sekretaris.dashboard') 
+                : redirect()->route('staff.dashboard');
+        }
+        return redirect()->route('sekretaris.login');
+    });
+
+    // 1. RUTE GUEST
+    Route::middleware('guest')->group(function () {
+        Route::get('/login', [SekretarisAuthController::class, 'index'])->name('login');
+        Route::post('/login', [SekretarisAuthController::class, 'authenticate'])->name('login.process');
+    });
+
+    // 2. RUTE TERLINDUNGI
+    Route::middleware(['auth', 'role:sekretaris'])->group(function () {
+        
+        Route::post('/logout', [SekretarisAuthController::class, 'logout'])->name('logout');
+
+        Route::get('/dashboard', [SekretarisDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/activity', [ActivityController::class, 'index'])->name('activity');
         
     });
 });

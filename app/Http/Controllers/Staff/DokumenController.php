@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Staff;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Dokumen;
+use App\Models\ActivityLog; // <-- TAMBAHAN: Import Model ActivityLog
 use Illuminate\Support\Facades\Storage;
 
 class DokumenController extends Controller
@@ -48,7 +49,7 @@ class DokumenController extends Controller
             'tipe_file' => 'nullable|string',
             'nama_file' => 'nullable|string',
             'deskripsi' => 'required|string',
-            'file_dokumen' => 'required|file|mimes:pdf,doc,docx,xls,xlsx|max:51200', // Maks 50MB
+            'file_dokumen' => 'required|file|mimes:pdf,doc,docx,xls,xlsx|max:51200', 
         ]);
 
         $file = $request->file('file_dokumen');
@@ -61,8 +62,11 @@ class DokumenController extends Controller
         $data['ukuran_file'] = $this->formatBytes($file->getSize());
         $data['nama_file'] = $data['nama_file'] ?? $file->getClientOriginalName();
 
-        unset($data['file_dokumen']); // Buang array ini sebelum save ke DB
+        unset($data['file_dokumen']); 
         Dokumen::create($data);
+
+        // <-- TAMBAHAN: Catat Log Unggah Dokumen
+        ActivityLog::record('Dokumen', 'Create', "Mengunggah dokumen resmi: {$request->judul}");
 
         return redirect()->route('staff.dokumen.index')->with('success', 'Dokumen berhasil diunggah!');
     }
@@ -87,10 +91,8 @@ class DokumenController extends Controller
         ]);
 
         if ($request->hasFile('file_dokumen')) {
-            // Hapus file lama
             if ($dokumen->file_path) Storage::disk('public')->delete($dokumen->file_path);
             
-            // Simpan file baru
             $file = $request->file('file_dokumen');
             $data['file_path'] = $file->store('dokumen_resmi', 'public');
             $data['tipe_file'] = $data['tipe_file'] ?? strtoupper($file->getClientOriginalExtension());
@@ -101,14 +103,23 @@ class DokumenController extends Controller
         unset($data['file_dokumen']);
         $dokumen->update($data);
 
+        // <-- TAMBAHAN: Catat Log Update Dokumen
+        ActivityLog::record('Dokumen', 'Update', "Memperbarui rincian/file dokumen: {$request->judul}");
+
         return redirect()->route('staff.dokumen.index')->with('success', 'Dokumen berhasil diperbarui!');
     }
 
     public function destroy($id)
     {
         $dokumen = Dokumen::findOrFail($id);
+        $judulDokumen = $dokumen->judul; // Simpan judul untuk log sebelum dihapus
+
         if ($dokumen->file_path) Storage::disk('public')->delete($dokumen->file_path);
         $dokumen->delete();
+
+        // <-- TAMBAHAN: Catat Log Hapus Dokumen
+        ActivityLog::record('Dokumen', 'Delete', "Menghapus dokumen: {$judulDokumen}");
+
         return redirect()->route('staff.dokumen.index')->with('success', 'Dokumen berhasil dihapus!');
     }
 
