@@ -14,6 +14,7 @@ use App\Models\Dokumen;
 // ==========================================
 // IMPORT CONTROLLERS (FRONTEND / NON-USER)
 // ==========================================
+use App\Http\Controllers\Frontend\PublicHomeController; // <-- JALUR SUDAH DIPERBAIKI KE FOLDER FRONTEND
 use App\Http\Controllers\Frontend\AspirasiController;
 use App\Http\Controllers\Frontend\BeritaController as FrontBeritaController;
 
@@ -34,10 +35,7 @@ use App\Http\Controllers\Staff\DokumenController;
 */
 
 // --- Beranda ---
-Route::get('/', function () {
-    $berita_terkini = Berita::latest()->take(3)->get();
-    return view('Non-Users.welcome', compact('berita_terkini'));
-})->name('home');
+Route::get('/', [PublicHomeController::class, 'index'])->name('home');
 
 
 // --- Halaman Statis & Profil ---
@@ -89,6 +87,7 @@ Route::get('/profil-anggota', function (Illuminate\Http\Request $request) {
 
     return view('Non-Users.profil-anggota', compact('anggotas', 'list_komisi', 'list_badan'));
 })->name('profil.anggota');
+
 Route::get('/profil-anggota/{id}/detail', function ($id) {
     return response()->json(App\Models\Anggota::findOrFail($id));
 })->name('profil.anggota.detail');
@@ -153,10 +152,12 @@ Route::get('/layanan-aspirasi/lacak', [AspirasiController::class, 'lacakIndex'])
 Route::get('/layanan-aspirasi/lacak/cari', [AspirasiController::class, 'cariAspirasi'])->name('aspirasi.lacak.cari');
 // Route untuk mengirim rating penilaian
 Route::post('/layanan-aspirasi/lacak/{id}/rating', [\App\Http\Controllers\Frontend\AspirasiController::class, 'submitRating'])->name('aspirasi.lacak.rating');
+
 // --- Rute Penunjuk Jalan Default Laravel ---
 Route::get('/login', function () {
     return redirect()->route('staff.login');
 })->name('login');
+
 /*
 |--------------------------------------------------------------------------
 | BACKEND / STAFF ROUTES (Area Admin)

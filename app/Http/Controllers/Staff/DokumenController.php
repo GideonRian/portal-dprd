@@ -20,6 +20,9 @@ class DokumenController extends Controller
             'perda' => Dokumen::where('kategori', 'Peraturan Daerah')->count(),
             'risalah' => Dokumen::where('kategori', 'Risalah Rapat')->count(),
             'laporan' => Dokumen::where('kategori', 'Laporan Keuangan')->count(),
+            'keputusan' => Dokumen::where('kategori', 'Keputusan DPRD')->count(),
+            'hearing' => Dokumen::where('kategori', 'Hasil Hearing')->count(),
+            'tatib' => Dokumen::where('kategori', 'Peraturan Tata Tertib')->count(),
         ];
 
         // Ambil Data Dokumen dengan filter

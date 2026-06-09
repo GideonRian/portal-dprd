@@ -18,7 +18,6 @@
             </div>
         </div>
 
-        <!-- TAMBAHAN: Menampilkan Pesan Error Jika Upload Gagal -->
         @if ($errors->any())
             <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-xl mb-6 shadow-sm">
                 <div class="flex items-center mb-2">
@@ -40,12 +39,14 @@
                 <div class="mb-6">
                     <label class="block text-sm font-bold text-gray-700 mb-2">Upload File Dokumen <span
                             class="text-rose-500">*</span></label>
-                    <div
-                        class="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:bg-gray-50 transition relative">
-                        <i class="fa-solid fa-arrow-up-from-bracket text-2xl text-gray-400 mb-2"></i>
-                        <p class="font-bold text-gray-700 text-sm">Klik untuk upload file</p>
+                    <div class="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:bg-gray-50 transition relative"
+                        id="drop-zone">
+                        <i id="upload-icon" class="fa-solid fa-arrow-up-from-bracket text-2xl text-gray-400 mb-2"></i>
+                        <p id="file-name-display" class="font-bold text-gray-700 text-sm">Klik untuk upload file</p>
                         <p class="text-xs text-gray-500 mt-1">PDF, DOC, DOCX, atau XLSX (Max 50MB)</p>
-                        <input type="file" name="file_dokumen" required accept=".pdf,.doc,.docx,.xls,.xlsx"
+
+                        <input type="file" name="file_dokumen" id="file-input" required
+                            accept=".pdf,.doc,.docx,.xls,.xlsx"
                             class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                     </div>
                 </div>
@@ -119,4 +120,37 @@
             </form>
         </div>
     </div>
+
+    <script>
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            var fileNameDisplay = document.getElementById('file-name-display');
+            var uploadIcon = document.getElementById('upload-icon');
+            var dropZone = document.getElementById('drop-zone');
+
+            if (e.target.files.length > 0) {
+                // Ambil nama file yang dipilih
+                var fileName = e.target.files[0].name;
+
+                // Ubah teks menjadi nama file dan warnanya menjadi biru
+                fileNameDisplay.textContent = fileName;
+                fileNameDisplay.classList.remove('text-gray-700');
+                fileNameDisplay.classList.add('text-blue-600');
+
+                // Ubah icon menjadi ceklis
+                uploadIcon.className = 'fa-solid fa-file-circle-check text-2xl text-blue-500 mb-2';
+
+                // Ubah border kotak menjadi biru
+                dropZone.classList.remove('border-gray-300');
+                dropZone.classList.add('border-blue-500', 'bg-blue-50');
+            } else {
+                // Kembalikan ke tampilan awal jika dibatalkan
+                fileNameDisplay.textContent = 'Klik untuk upload file';
+                fileNameDisplay.classList.remove('text-blue-600');
+                fileNameDisplay.classList.add('text-gray-700');
+                uploadIcon.className = 'fa-solid fa-arrow-up-from-bracket text-2xl text-gray-400 mb-2';
+                dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+                dropZone.classList.add('border-gray-300');
+            }
+        });
+    </script>
 @endsection
