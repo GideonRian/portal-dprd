@@ -37,6 +37,7 @@ use App\Http\Controllers\Sekretaris\ActivityController;
 use App\Http\Controllers\Sekretaris\AuthController as SekretarisAuthController;
 use App\Http\Controllers\Sekretaris\ApprovalController;
 use App\Http\Controllers\Sekretaris\StatsController;
+use App\Http\Controllers\Sekretaris\ReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -245,5 +246,8 @@ Route::prefix('sekretaris')->name('sekretaris.')->group(function () {
         Route::post('/approval/{id}/reject', [ApprovalController::class, 'reject'])->name('approval.reject');
         Route::get('/stats', [StatsController::class, 'index'])->name('stats');
         Route::get('/stats/export', [StatsController::class, 'exportReport'])->name('stats.export');
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports');
+        Route::post('/reports/generate', [ReportController::class, 'generate'])->name('reports.generate');
+        Route::get('/reports/download/{fileName}', [ReportController::class, 'downloadRecent'])->name('reports.download');
     });
 });

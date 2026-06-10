@@ -83,50 +83,50 @@
         <h3 class="text-xl font-bold text-gray-900 mb-4">Monitoring & Control</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
 
-            <a href="#"
+            <a href="{{ route('sekretaris.activity') }}"
                 class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm flex items-center gap-4 hover:shadow-md transition hover:border-blue-300 group">
                 <div
                     class="w-14 h-14 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition">
                     <i class="fa-solid fa-chart-line text-2xl"></i>
                 </div>
                 <div>
-                    <h4 class="font-bold text-gray-900">Activity Log</h4>
+                    <h4 class="font-bold text-gray-900">Log Aktivitas</h4>
                     <p class="text-xs text-gray-500 mt-1">Monitor aktivitas admin dan perubahan data</p>
                 </div>
             </a>
 
-            <a href="#"
+            <a href="{{ route('sekretaris.approval') }}"
                 class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm flex items-center gap-4 hover:shadow-md transition hover:border-purple-300 group">
                 <div
                     class="w-14 h-14 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition">
                     <i class="fa-solid fa-check-double text-2xl"></i>
                 </div>
                 <div>
-                    <h4 class="font-bold text-gray-900">Content Approval</h4>
-                    <p class="text-xs text-gray-500 mt-1">Review dan approve konten yang diajukan</p>
+                    <h4 class="font-bold text-gray-900">Persetujuan Pimpinan Sekretariat</h4>
+                    <p class="text-xs text-gray-500 mt-1">Review dan approve dokumen yang diajukan</p>
                 </div>
             </a>
 
-            <a href="#"
+            <a href="{{ route('sekretaris.stats') }}"
                 class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm flex items-center gap-4 hover:shadow-md transition hover:border-green-300 group">
                 <div
                     class="w-14 h-14 rounded-xl bg-green-50 text-green-600 flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition">
                     <i class="fa-solid fa-chart-simple text-2xl"></i>
                 </div>
                 <div>
-                    <h4 class="font-bold text-gray-900">Statistics</h4>
+                    <h4 class="font-bold text-gray-900">Statistik</h4>
                     <p class="text-xs text-gray-500 mt-1">Lihat statistik lengkap website</p>
                 </div>
             </a>
 
-            <a href="#"
+            <a href="{{ route('sekretaris.reports') }}"
                 class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm flex items-center gap-4 hover:shadow-md transition hover:border-orange-300 group">
                 <div
                     class="w-14 h-14 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center group-hover:bg-orange-600 group-hover:text-white transition">
                     <i class="fa-solid fa-clipboard-list text-2xl"></i>
                 </div>
                 <div>
-                    <h4 class="font-bold text-gray-900">System Reports</h4>
+                    <h4 class="font-bold text-gray-900">Laporan Sistem</h4>
                     <p class="text-xs text-gray-500 mt-1">Generate laporan sistem dan audit</p>
                 </div>
             </a>
@@ -141,17 +141,17 @@
                 untuk manajemen konten:</p>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <a href="#"
+                <a href="{{ route('staff.anggota.index') }}"
                     class="bg-blue-600 hover:bg-blue-700 text-white py-4 px-4 rounded-xl font-bold text-center shadow-md hover:shadow-lg transition flex justify-center items-center gap-2">
                     <i class="fa-solid fa-user-group"></i> Kelola Anggota
                 </a>
 
-                <a href="#"
+                <a href="{{ route('staff.berita.index') }}"
                     class="bg-purple-600 hover:bg-purple-700 text-white py-4 px-4 rounded-xl font-bold text-center shadow-md hover:shadow-lg transition flex justify-center items-center gap-2">
                     <i class="fa-regular fa-newspaper"></i> Kelola Berita
                 </a>
 
-                <a href="#"
+                <a href="{{ route('staff.aspirasi.index') }}"
                     class="bg-green-600 hover:bg-green-700 text-white py-4 px-4 rounded-xl font-bold text-center shadow-md hover:shadow-lg transition flex justify-center items-center gap-2">
                     <i class="fa-regular fa-comments"></i> Kelola Aspirasi
                 </a>

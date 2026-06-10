@@ -60,9 +60,11 @@
                         Stats
                     </a>
 
-                    <a href="#"
-                        class="border border-purple-500 hover:bg-purple-700 px-3 py-1.5 rounded-lg font-medium text-sm text-white flex items-center gap-2 transition">
-                        <i class="fa-regular fa-file-lines"></i> Reports
+                    <a href="{{ route('sekretaris.reports') }}"
+                        class="{{ request()->routeIs('sekretaris.reports') ? 'bg-white text-purple-800 font-bold shadow-sm' : 'border border-purple-500 hover:bg-purple-700 text-white font-medium' }} px-3 py-1.5 rounded-lg text-sm flex items-center gap-2 transition">
+                        <i
+                            class="fa-regular fa-file-lines {{ request()->routeIs('sekretaris.reports') ? 'text-purple-600' : '' }}"></i>
+                        Reports
                     </a>
 
                     <div x-data="{ open: false }" class="relative">
@@ -75,8 +77,8 @@
                         <div x-show="open" x-transition style="display: none;"
                             class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl py-2 z-50 border border-gray-100 text-gray-800">
                             <div class="px-4 py-3 border-b border-gray-100 mb-1">
-                                <p class="text-sm font-bold">Sekretariat</p>
-                                <p class="text-xs text-gray-500">Admin 2 (Sekretariat)</p>
+                                <p class="text-sm font-bold">Sekretaris</p>
+                                <p class="text-xs text-gray-500">Pimpinan(Sekretariat)</p>
                             </div>
 
                             <a href="{{ route('sekretaris.password.edit') }}"
