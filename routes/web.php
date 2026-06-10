@@ -35,7 +35,8 @@ use App\Http\Controllers\Staff\DokumenController;
 use App\Http\Controllers\Sekretaris\DashboardController as SekretarisDashboardController;
 use App\Http\Controllers\Sekretaris\ActivityController;
 use App\Http\Controllers\Sekretaris\AuthController as SekretarisAuthController;
-
+use App\Http\Controllers\Sekretaris\ApprovalController;
+use App\Http\Controllers\Sekretaris\StatsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -43,111 +44,118 @@ use App\Http\Controllers\Sekretaris\AuthController as SekretarisAuthController;
 |--------------------------------------------------------------------------
 */
 
-// --- Beranda ---
-Route::get('/', [PublicHomeController::class, 'index'])->name('home');
+// TAMBAHAN: Bungkus area publik dengan middleware pelacak lalu lintas
+Route::middleware([\App\Http\Middleware\TrackPublicTraffic::class])->group(function () {
 
-// --- Halaman Statis & Profil ---
-Route::get('/tentang-dprd', function () {
-    return view('Non-Users.tentang');
-})->name('tentang');
+    // --- Beranda ---
+    Route::get('/', [PublicHomeController::class, 'index'])->name('home');
 
-Route::get('/kontak', function () {
-    return view('Non-Users.kontak');
-})->name('kontak');
+    // --- Halaman Statis & Profil ---
+    Route::get('/tentang-dprd', function () {
+        return view('Non-Users.tentang');
+    })->name('tentang');
 
-Route::get('/profil-anggota', function (Illuminate\Http\Request $request) {
-    $search = $request->input('search');
-    $komisi = $request->input('komisi');
-    $badan = $request->input('badan');
+    Route::get('/kontak', function () {
+        return view('Non-Users.kontak');
+    })->name('kontak');
 
-    $query = App\Models\Anggota::query();
+    Route::get('/profil-anggota', function (Illuminate\Http\Request $request) {
+        $search = $request->input('search');
+        $komisi = $request->input('komisi');
+        $badan = $request->input('badan');
 
-    if ($search) {
-        $query->where(function($q) use ($search) {
-            $q->where('nama', 'like', "%{$search}%")
-              ->orWhere('jabatan', 'like', "%{$search}%")
-              ->orWhere('dapil', 'like', "%{$search}%");
-        });
-    }
+        $query = App\Models\Anggota::query();
 
-    if ($komisi) {
-        $query->where('komisi', $komisi);
-    }
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('jabatan', 'like', "%{$search}%")
+                  ->orWhere('dapil', 'like', "%{$search}%");
+            });
+        }
 
-    if ($badan) {
-        $query->where('badan', $badan);
-    }
+        if ($komisi) {
+            $query->where('komisi', $komisi);
+        }
 
-    $anggotas = $query->orderByRaw("CASE 
-            WHEN jabatan LIKE '%Ketua%' AND jabatan NOT LIKE '%Wakil%' THEN 1 
-            WHEN jabatan LIKE '%Wakil Ketua%' THEN 2 
-            ELSE 3 END")
-        ->orderBy('nama', 'asc')
-        ->get();
+        if ($badan) {
+            $query->where('badan', $badan);
+        }
 
-    $list_komisi = App\Models\Anggota::whereNotNull('komisi')->distinct()->pluck('komisi');
-    $list_badan = App\Models\Anggota::whereNotNull('badan')->distinct()->pluck('badan');
+        $anggotas = $query->orderByRaw("CASE 
+                WHEN jabatan LIKE '%Ketua%' AND jabatan NOT LIKE '%Wakil%' THEN 1 
+                WHEN jabatan LIKE '%Wakil Ketua%' THEN 2 
+                ELSE 3 END")
+            ->orderBy('nama', 'asc')
+            ->get();
 
-    return view('Non-Users.profil-anggota', compact('anggotas', 'list_komisi', 'list_badan'));
-})->name('profil.anggota');
+        $list_komisi = App\Models\Anggota::whereNotNull('komisi')->distinct()->pluck('komisi');
+        $list_badan = App\Models\Anggota::whereNotNull('badan')->distinct()->pluck('badan');
 
-Route::get('/profil-anggota/{id}/detail', function ($id) {
-    return response()->json(App\Models\Anggota::findOrFail($id));
-})->name('profil.anggota.detail');
+        return view('Non-Users.profil-anggota', compact('anggotas', 'list_komisi', 'list_badan'));
+    })->name('profil.anggota');
 
-
-// --- Pusat Dokumen ---
-Route::get('/pusat-dokumen', function () {
-    $dokumens = Dokumen::latest()->get();
-    return view('Non-Users.pusat-dokumen', compact('dokumens'));
-})->name('pusat.dokumen');
+    Route::get('/profil-anggota/{id}/detail', function ($id) {
+        return response()->json(App\Models\Anggota::findOrFail($id));
+    })->name('profil.anggota.detail');
 
 
-// --- Agenda Publik ---
-Route::get('/agenda-kegiatan', function (Request $request) {
-    Agenda::where('status', 'Akan Datang')
-        ->where('tanggal', '<', now()->toDateString())
-        ->update(['status' => 'Selesai']);
-
-    $query = Agenda::latest('tanggal');
-
-    if ($request->filled('search')) {
-        $query->where('judul', 'like', '%' . $request->search . '%');
-    }
-
-    if ($request->filled('kategori') && $request->kategori !== '') {
-        $query->where('kategori', $request->kategori);
-    }
-
-    if ($request->filled('bulan') && $request->bulan !== '') {
-        $query->whereMonth('tanggal', $request->bulan);
-    }
-
-    $agendas = $query->get();
-    return view('Non-Users.agenda', compact('agendas'));
-})->name('publik.agenda');
-
-Route::get('/agenda-kegiatan/{id}', function ($id) {
-    $agenda = Agenda::findOrFail($id);
-    $related = Agenda::where('id', '!=', $id)->limit(3)->latest()->get();
-    
-    return view('Non-Users.agenda-detail', compact('agenda', 'related'));
-})->name('publik.agenda.detail');
+    // --- Pusat Dokumen ---
+    Route::get('/pusat-dokumen', function () {
+        // Hanya mengambil dokumen yang sudah disetujui Sekretaris
+        $dokumens = Dokumen::where('status_persetujuan', 'Approved')->latest()->get();
+        return view('Non-Users.pusat-dokumen', compact('dokumens'));
+    })->name('pusat.dokumen');
 
 
-// --- Berita Publik ---
-Route::get('/berita', [FrontBeritaController::class, 'index'])->name('berita');
-Route::get('/berita/{slug}', [FrontBeritaController::class, 'show'])->name('berita.detail');
+    // --- Agenda Publik ---
+    Route::get('/agenda-kegiatan', function (Request $request) {
+        Agenda::where('status', 'Akan Datang')
+            ->where('tanggal', '<', now()->toDateString())
+            ->update(['status' => 'Selesai']);
+
+        $query = Agenda::latest('tanggal');
+
+        if ($request->filled('search')) {
+            $query->where('judul', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('kategori') && $request->kategori !== '') {
+            $query->where('kategori', $request->kategori);
+        }
+
+        if ($request->filled('bulan') && $request->bulan !== '') {
+            $query->whereMonth('tanggal', $request->bulan);
+        }
+
+        $agendas = $query->get();
+        return view('Non-Users.agenda', compact('agendas'));
+    })->name('publik.agenda');
+
+    Route::get('/agenda-kegiatan/{id}', function ($id) {
+        $agenda = Agenda::findOrFail($id);
+        $related = Agenda::where('id', '!=', $id)->limit(3)->latest()->get();
+        
+        return view('Non-Users.agenda-detail', compact('agenda', 'related'));
+    })->name('publik.agenda.detail');
 
 
-// --- Layanan Aspirasi ---
-Route::get('/layanan-aspirasi', [AspirasiController::class, 'index'])->name('layanan.aspirasi');
-Route::post('/layanan-aspirasi/kirim-otp', [AspirasiController::class, 'prosesFormLaporan'])->name('aspirasi.kirim');
-Route::get('/layanan-aspirasi/verifikasi', [AspirasiController::class, 'showOtpPage'])->name('aspirasi.otp');
-Route::post('/layanan-aspirasi/verifikasi', [AspirasiController::class, 'verifyOtp'])->name('aspirasi.otp.verify');
-Route::get('/layanan-aspirasi/lacak', [AspirasiController::class, 'lacakIndex'])->name('layanan.aspirasi.lacak');
-Route::get('/layanan-aspirasi/lacak/cari', [AspirasiController::class, 'cariAspirasi'])->name('aspirasi.lacak.cari');
-Route::post('/layanan-aspirasi/lacak/{id}/rating', [\App\Http\Controllers\Frontend\AspirasiController::class, 'submitRating'])->name('aspirasi.lacak.rating');
+    // --- Berita Publik ---
+    Route::get('/berita', [FrontBeritaController::class, 'index'])->name('berita');
+    Route::get('/berita/{slug}', [FrontBeritaController::class, 'show'])->name('berita.detail');
+    Route::post('/berita/{id}/like', [FrontBeritaController::class, 'like'])->name('berita.like');
+
+
+    // --- Layanan Aspirasi ---
+    Route::get('/layanan-aspirasi', [AspirasiController::class, 'index'])->name('layanan.aspirasi');
+    Route::post('/layanan-aspirasi/kirim-otp', [AspirasiController::class, 'prosesFormLaporan'])->name('aspirasi.kirim');
+    Route::get('/layanan-aspirasi/verifikasi', [AspirasiController::class, 'showOtpPage'])->name('aspirasi.otp');
+    Route::post('/layanan-aspirasi/verifikasi', [AspirasiController::class, 'verifyOtp'])->name('aspirasi.otp.verify');
+    Route::get('/layanan-aspirasi/lacak', [AspirasiController::class, 'lacakIndex'])->name('layanan.aspirasi.lacak');
+    Route::get('/layanan-aspirasi/lacak/cari', [AspirasiController::class, 'cariAspirasi'])->name('aspirasi.lacak.cari');
+    Route::post('/layanan-aspirasi/lacak/{id}/rating', [\App\Http\Controllers\Frontend\AspirasiController::class, 'submitRating'])->name('aspirasi.lacak.rating');
+
+}); // Akhir dari middleware TrackPublicTraffic
 
 // --- Rute Penunjuk Jalan Default Laravel ---
 Route::get('/login', function () {
@@ -162,7 +170,6 @@ Route::get('/login', function () {
 */
 Route::prefix('staff')->name('staff.')->group(function () {
     
-    // PERBAIKAN: Menggunakan Facade Auth::
     Route::get('/', function () {
         if (Auth::check()) {
             return Auth::user()->role === 'staff' 
@@ -208,7 +215,6 @@ Route::prefix('staff')->name('staff.')->group(function () {
 */
 Route::prefix('sekretaris')->name('sekretaris.')->group(function () {
     
-    // PERBAIKAN: Menggunakan Facade Auth::
     Route::get('/', function () {
         if (Auth::check()) {
             return Auth::user()->role === 'sekretaris' 
@@ -228,9 +234,16 @@ Route::prefix('sekretaris')->name('sekretaris.')->group(function () {
     Route::middleware(['auth', 'role:sekretaris'])->group(function () {
         
         Route::post('/logout', [SekretarisAuthController::class, 'logout'])->name('logout');
+        Route::get('/ganti-password', [SekretarisAuthController::class, 'editPassword'])->name('password.edit');
+        Route::put('/ganti-password', [SekretarisAuthController::class, 'updatePassword'])->name('password.update');
 
         Route::get('/dashboard', [SekretarisDashboardController::class, 'index'])->name('dashboard');
         Route::get('/activity', [ActivityController::class, 'index'])->name('activity');
-        
+        Route::get('/activity/export', [ActivityController::class, 'exportReport'])->name('activity.export');
+        Route::get('/approval', [ApprovalController::class, 'index'])->name('approval');
+        Route::post('/approval/{id}/approve', [ApprovalController::class, 'approve'])->name('approval.approve');
+        Route::post('/approval/{id}/reject', [ApprovalController::class, 'reject'])->name('approval.reject');
+        Route::get('/stats', [StatsController::class, 'index'])->name('stats');
+        Route::get('/stats/export', [StatsController::class, 'exportReport'])->name('stats.export');
     });
 });

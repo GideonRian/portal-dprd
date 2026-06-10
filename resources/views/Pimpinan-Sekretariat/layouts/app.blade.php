@@ -46,14 +46,18 @@
                         Activity
                     </a>
 
-                    <a href="#"
-                        class="border border-purple-500 hover:bg-purple-700 px-3 py-1.5 rounded-lg font-medium text-sm text-white flex items-center gap-2 transition">
-                        <i class="fa-regular fa-user"></i> Approvals
+                    <a href="{{ route('sekretaris.approval') }}"
+                        class="{{ request()->routeIs('sekretaris.approval') ? 'bg-white text-purple-800 font-bold shadow-sm' : 'border border-purple-500 hover:bg-purple-700 text-white font-medium' }} px-3 py-1.5 rounded-lg text-sm flex items-center gap-2 transition">
+                        <i
+                            class="fa-regular fa-user {{ request()->routeIs('sekretaris.approval') ? 'text-purple-600' : '' }}"></i>
+                        Approvals
                     </a>
 
-                    <a href="#"
-                        class="border border-purple-500 hover:bg-purple-700 px-3 py-1.5 rounded-lg font-medium text-sm text-white flex items-center gap-2 transition">
-                        <i class="fa-solid fa-chart-bar"></i> Stats
+                    <a href="{{ route('sekretaris.stats') }}"
+                        class="{{ request()->routeIs('sekretaris.stats') ? 'bg-white text-purple-800 font-bold shadow-sm' : 'border border-purple-500 hover:bg-purple-700 text-white font-medium' }} px-3 py-1.5 rounded-lg text-sm flex items-center gap-2 transition">
+                        <i
+                            class="fa-solid fa-chart-bar {{ request()->routeIs('sekretaris.stats') ? 'text-purple-600' : '' }}"></i>
+                        Stats
                     </a>
 
                     <a href="#"
@@ -75,7 +79,7 @@
                                 <p class="text-xs text-gray-500">Admin 2 (Sekretariat)</p>
                             </div>
 
-                            <a href="#"
+                            <a href="{{ route('sekretaris.password.edit') }}"
                                 class="block px-4 py-2 text-sm hover:bg-purple-50 hover:text-purple-700 transition">
                                 <i class="fa-solid fa-key mr-2"></i> Ganti Password
                             </a>

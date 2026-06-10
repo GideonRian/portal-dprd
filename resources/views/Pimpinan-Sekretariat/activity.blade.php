@@ -16,7 +16,7 @@
                     <i class="fa-solid fa-heart-pulse text-2xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-extrabold text-gray-900 mb-1">Activity Log</h1>
+                    <h1 class="text-3xl font-extrabold text-gray-900 mb-1">Log Aktivitas</h1>
                     <p class="text-gray-500 font-medium">Monitor semua aktivitas admin dan perubahan data</p>
                 </div>
             </div>
@@ -26,10 +26,10 @@
                     class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2.5 rounded-xl font-bold transition shadow-sm flex items-center gap-2 text-sm">
                     <i class="fa-solid fa-rotate-right"></i> Refresh
                 </button>
-                <button
-                    class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-xl font-bold transition shadow-md flex items-center gap-2 text-sm">
-                    <i class="fa-solid fa-download"></i> Export
-                </button>
+                <a href="{{ route('sekretaris.activity.export', request()->query()) }}"
+                    class="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md flex items-center gap-2 transition text-sm w-max">
+                    <i class="fa-solid fa-download"></i> Ekspor Laporan
+                </a>
             </div>
         </div>
 

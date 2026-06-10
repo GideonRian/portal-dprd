@@ -109,7 +109,7 @@
         <div class="space-y-4">
             @forelse($dokumens as $doc)
                 <div
-                    class="bg-white rounded-2xl shadow-sm hover:shadow-md transition border border-gray-100 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    class="bg-white rounded-2xl shadow-sm hover:shadow-md transition border border-gray-100 p-5 flex flex-col md:flex-row md:items-start justify-between gap-4">
 
                     <div class="flex-1">
                         <div class="flex items-center gap-3 mb-2 text-xs">
@@ -119,15 +119,41 @@
                             <span class="text-gray-400"><i class="fa-regular fa-calendar mr-1"></i>
                                 {{ \Carbon\Carbon::parse($doc->created_at)->format('d F Y') }}</span>
                         </div>
-                        <h3 class="text-lg font-bold text-gray-900 mb-1">{{ $doc->judul }}</h3>
-                        <p class="text-gray-500 text-sm mb-2 line-clamp-1">{{ $doc->deskripsi }}</p>
+
+                        <h3 class="text-lg font-bold text-gray-900 mb-1 flex flex-wrap items-center gap-2">
+                            {{ $doc->judul }}
+
+                            @if ($doc->isPending())
+                                <span class="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full"><i
+                                        class="fa-solid fa-clock"></i> Menunggu Review</span>
+                            @elseif($doc->isApproved())
+                                <span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full"><i
+                                        class="fa-solid fa-circle-check"></i> Live Publik</span>
+                            @elseif($doc->isRejected())
+                                <span class="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded-full"><i
+                                        class="fa-solid fa-circle-xmark"></i> Ditolak/Revisi</span>
+                            @endif
+                        </h3>
+
+                        @if ($doc->catatan_persetujuan)
+                            <div
+                                class="mt-2 mb-3 p-3 rounded-lg text-sm border {{ $doc->isRejected() ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200' }}">
+                                <span class="font-bold {{ $doc->isRejected() ? 'text-red-700' : 'text-blue-700' }}">
+                                    <i class="fa-solid fa-comment-dots mr-1"></i> Catatan Pimpinan:
+                                </span>
+                                <p class="text-gray-700 mt-1 italic">"{{ $doc->catatan_persetujuan }}"</p>
+                            </div>
+                        @endif
+
+                        <p class="text-gray-500 text-sm mb-2 line-clamp-2">{{ $doc->deskripsi }}</p>
+
                         <div
                             class="text-xs font-mono text-gray-400 bg-gray-50 px-2 py-1 rounded w-max border border-gray-100">
                             File: {{ $doc->nama_file }}
                         </div>
                     </div>
 
-                    <div class="flex flex-row md:flex-col gap-2 shrink-0">
+                    <div class="flex flex-row md:flex-col gap-2 shrink-0 md:mt-0 mt-4 w-full md:w-auto">
                         <a href="{{ route('staff.dokumen.edit', $doc->id) }}"
                             class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition shadow-sm">
                             <i class="fa-regular fa-pen-to-square"></i> Edit
