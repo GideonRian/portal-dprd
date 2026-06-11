@@ -198,3 +198,30 @@ Route::prefix('staff')->name('staff.')->group(function () {
         
     });
 });
+
+/*
+|--------------------------------------------------------------------------
+| BACKEND / SuperAdmin (Area Super Admin)
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('superadmin')->name('superadmin.')->group(function () {
+    
+    // =========================================================================
+    // MIDDLEWARE DIMATIKAN SEMENTARA UNTUK TES TAMPILAN (UI)
+    // Hapus tanda komentar (//) nanti jika sistem login & role sudah siap
+    // =========================================================================
+    // Route::middleware(['auth', 'is_superadmin'])->group(function () {
+        
+        // Dashboard Super Admin
+        Route::get('/dashboard', [\App\Http\Controllers\SuperAdmin\DashboardController::class, 'index'])->name('dashboard');
+
+        // Manajemen Akun Staff / Admin (Contoh resource route)
+        Route::resource('/users', \App\Http\Controllers\SuperAdmin\UserController::class)->names('users');
+
+        // Pengaturan Sistem / Konfigurasi Web
+        Route::get('/pengaturan', [\App\Http\Controllers\SuperAdmin\SettingController::class, 'index'])->name('pengaturan');
+        Route::put('/pengaturan/update', [\App\Http\Controllers\SuperAdmin\SettingController::class, 'update'])->name('pengaturan.update');
+        
+    // });
+});
