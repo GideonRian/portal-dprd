@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Staff;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Dokumen;
+use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Storage;
 
 class DokumenController extends Controller
@@ -14,15 +15,16 @@ class DokumenController extends Controller
         $search = $request->input('search');
         $kategori = $request->input('kategori');
 
-        // Statistik Dokumen
         $stats = [
             'total' => Dokumen::count(),
             'perda' => Dokumen::where('kategori', 'Peraturan Daerah')->count(),
             'risalah' => Dokumen::where('kategori', 'Risalah Rapat')->count(),
             'laporan' => Dokumen::where('kategori', 'Laporan Keuangan')->count(),
+            'keputusan' => Dokumen::where('kategori', 'Keputusan DPRD')->count(),
+            'hearing' => Dokumen::where('kategori', 'Hasil Hearing')->count(),
+            'tatib' => Dokumen::where('kategori', 'Peraturan Tata Tertib')->count(),
         ];
 
-        // Ambil Data Dokumen dengan filter
         $dokumens = Dokumen::when($search, function ($query, $search) {
             return $query->where('judul', 'like', "%{$search}%")
                          ->orWhere('deskripsi', 'like', "%{$search}%")
@@ -45,23 +47,25 @@ class DokumenController extends Controller
             'tipe_file' => 'nullable|string',
             'nama_file' => 'nullable|string',
             'deskripsi' => 'required|string',
-            'file_dokumen' => 'required|file|mimes:pdf,doc,docx,xls,xlsx|max:51200', // Maks 50MB
+            'file_dokumen' => 'required|file|mimes:pdf,doc,docx,xls,xlsx|max:51200', 
         ]);
 
         $file = $request->file('file_dokumen');
-        
-        // Simpan file ke storage
         $data['file_path'] = $file->store('dokumen_resmi', 'public');
         
-        // Auto-generate tipe dan ukuran jika kosong
         $data['tipe_file'] = $data['tipe_file'] ?? strtoupper($file->getClientOriginalExtension());
         $data['ukuran_file'] = $this->formatBytes($file->getSize());
         $data['nama_file'] = $data['nama_file'] ?? $file->getClientOriginalName();
+        
+        // Menggunakan konstanta Model untuk status
+        $data['status_persetujuan'] = Dokumen::STATUS_PENDING;
 
-        unset($data['file_dokumen']); // Buang array ini sebelum save ke DB
+        unset($data['file_dokumen']); 
         Dokumen::create($data);
 
-        return redirect()->route('staff.dokumen.index')->with('success', 'Dokumen berhasil diunggah!');
+        ActivityLog::record('Dokumen', 'Create', "Mengunggah dokumen baru: {$request->judul} (Menunggu persetujuan Sekretaris)");
+
+        return redirect()->route('staff.dokumen.index')->with('success', 'Dokumen berhasil diunggah dan sedang menunggu persetujuan Sekretaris!');
     }
 
     public function edit($id)
@@ -84,10 +88,8 @@ class DokumenController extends Controller
         ]);
 
         if ($request->hasFile('file_dokumen')) {
-            // Hapus file lama
             if ($dokumen->file_path) Storage::disk('public')->delete($dokumen->file_path);
             
-            // Simpan file baru
             $file = $request->file('file_dokumen');
             $data['file_path'] = $file->store('dokumen_resmi', 'public');
             $data['tipe_file'] = $data['tipe_file'] ?? strtoupper($file->getClientOriginalExtension());
@@ -95,21 +97,31 @@ class DokumenController extends Controller
             $data['nama_file'] = $data['nama_file'] ?? $file->getClientOriginalName();
         }
 
+        // Kembalikan ke status Pending dan hapus catatan lama (reset)
+        $data['status_persetujuan'] = Dokumen::STATUS_PENDING;
+        $data['catatan_persetujuan'] = null;
+
         unset($data['file_dokumen']);
         $dokumen->update($data);
 
-        return redirect()->route('staff.dokumen.index')->with('success', 'Dokumen berhasil diperbarui!');
+        ActivityLog::record('Dokumen', 'Update', "Memperbarui dokumen: {$request->judul} (Status di-reset ke menunggu persetujuan)");
+
+        return redirect()->route('staff.dokumen.index')->with('success', 'Dokumen berhasil diperbarui dan status kembali menunggu persetujuan.');
     }
 
     public function destroy($id)
     {
         $dokumen = Dokumen::findOrFail($id);
+        $judulDokumen = $dokumen->judul;
+
         if ($dokumen->file_path) Storage::disk('public')->delete($dokumen->file_path);
         $dokumen->delete();
+
+        ActivityLog::record('Dokumen', 'Delete', "Menghapus dokumen: {$judulDokumen}");
+
         return redirect()->route('staff.dokumen.index')->with('success', 'Dokumen berhasil dihapus!');
     }
 
-    // Fungsi bantuan untuk mengubah byte menjadi format KB/MB
     private function formatBytes($bytes, $precision = 1) { 
         $units = array('B', 'KB', 'MB', 'GB', 'TB'); 
         $bytes = max($bytes, 0); 

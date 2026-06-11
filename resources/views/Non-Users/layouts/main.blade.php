@@ -34,9 +34,6 @@
                     <a href="{{ route('berita') }}" class="nav-link {{ request()->routeIs('berita') ? 'active' : '' }}">Berita</a>
                     <a href="{{ route('tentang') }}" class="nav-link {{ request()->routeIs('tentang') ? 'active' : '' }}">Tentang</a>
                     <a href="{{ route('kontak') }}" class="nav-link {{ request()->routeIs('kontak') ? 'active' : '' }}">Kontak</a>
-                    <button class="text-gray-400 hover:text-blue-600">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                    </button>
                 </div>
             </div>
         </div>

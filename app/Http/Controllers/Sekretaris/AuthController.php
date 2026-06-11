@@ -1,26 +1,26 @@
 <?php
 
-namespace App\Http\Controllers\Staff;
+namespace App\Http\Controllers\Sekretaris;
 
-use App\Models\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Models\ActivityLog; // <-- TAMBAHAN: Import Model ActivityLog
+use App\Models\User;
+use App\Models\ActivityLog;
 
 class AuthController extends Controller
 {
     /**
-     * Menampilkan halaman login
+     * 1. Menampilkan halaman login Sekretaris
      */
     public function index()
     {
-        return view('Staff.login');
+        return view('Pimpinan-Sekretariat.login');
     }
 
     /**
-     * Memproses otentikasi login staf
+     * 2. Memproses otentikasi login Sekretaris
      */
     public function authenticate(Request $request)
     {
@@ -29,22 +29,21 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        // LOGIKA OTENTIKASI NYATA
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
 
-            // Proteksi: Hanya role 'staff' atau 'admin' yang bisa masuk panel ini
-            if (in_array($user->role, ['pimpinan', 'anggota_dewan', 'sekretaris'])) {
+            // Proteksi: Hanya role 'sekretaris' yang bisa masuk panel ini
+            if ($user->role !== 'sekretaris') {
                 Auth::logout();
-                return back()->with('error', 'Akses ditolak. Panel ini khusus untuk Staf Sekretariat.');
+                return back()->with('error', 'Akses ditolak. Panel ini khusus untuk Pimpinan Sekretariat.');
             }
 
             $request->session()->regenerate();
 
-            // <-- TAMBAHAN: Catat aktivitas Login berhasil
-            ActivityLog::record('Autentikasi', 'Login', 'Staf berhasil masuk ke sistem.');
+            // Catat aktivitas Login
+            ActivityLog::record('Autentikasi', 'Login', 'Pimpinan / Sekretaris berhasil masuk ke sistem.');
 
-            return redirect()->route('staff.dashboard');
+            return redirect()->route('sekretaris.dashboard');
         }
 
         return back()->withErrors([
@@ -53,15 +52,15 @@ class AuthController extends Controller
     }
 
     /**
-     * Menampilkan halaman ganti password
+     * 3. Menampilkan halaman ganti password Sekretaris
      */
     public function editPassword()
     {
-        return view('Staff.Password.edit');
+        return view('Pimpinan-Sekretariat.Password.edit');
     }
 
     /**
-     * Memproses perubahan password
+     * 4. Memproses perubahan password Sekretaris
      */
     public function updatePassword(Request $request)
     {
@@ -70,39 +69,33 @@ class AuthController extends Controller
             'password' => 'required|min:8|confirmed',
         ]);
 
-        // Ambil ID user yang sedang login
         $userId = Auth::id();
-        
-        // Ambil instance Model User berdasarkan ID agar bisa menggunakan method update()
         $user = User::find($userId);
 
-        // Cek password lama
         if (!Hash::check($request->current_password, $user->password)) {
             return back()->withErrors(['current_password' => 'Password lama tidak sesuai.']);
         }
 
-        // Update password
         $user->password = Hash::make($request->password);
         $user->save(); 
 
-        // <-- TAMBAHAN: Catat aktivitas Update Password
-        ActivityLog::record('Autentikasi', 'Update', 'Staf mengubah password akunnya.');
+        ActivityLog::record('Autentikasi', 'Update', 'Pimpinan / Sekretaris mengubah password akunnya.');
 
-        return redirect()->route('staff.dashboard')->with('success', 'Password berhasil diperbarui!');
+        return redirect()->route('sekretaris.dashboard')->with('success', 'Password Anda berhasil diperbarui!');
     }
 
     /**
-     * Proses Logout
+     * 5. Proses Logout Sekretaris
      */
     public function logout(Request $request)
     {
-        // <-- TAMBAHAN: Catat aktivitas Logout SEBELUM sesi dihancurkan
-        ActivityLog::record('Autentikasi', 'Logout', 'Staf keluar dari sistem.');
+        // Catat aktivitas Logout SEBELUM sesi dihancurkan
+        ActivityLog::record('Autentikasi', 'Logout', 'Pimpinan / Sekretaris keluar dari sistem.');
 
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         
-        return redirect()->route('staff.login');
+        return redirect()->route('sekretaris.login');
     }
 }

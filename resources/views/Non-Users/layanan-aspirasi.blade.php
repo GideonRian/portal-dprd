@@ -129,24 +129,28 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap <span
                                         class="text-red-500">*</span></label>
                                 <input type="text" name="nama" required placeholder="Masukkan nama lengkap"
+                                    value="{{ old('nama') }}"
                                     class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Email <span
                                         class="text-red-500">*</span></label>
                                 <input type="email" name="email" required placeholder="contoh@email.com"
+                                    value="{{ old('email') }}"
                                     class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Telepon <span
                                         class="text-red-500">*</span></label>
                                 <input type="tel" name="telepon" required placeholder="08xxxxxxxxxx"
+                                    value="{{ old('telepon') }}"
                                     class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Wilayah/Daerah <span
                                         class="text-red-500">*</span></label>
                                 <input type="text" name="wilayah" required placeholder="Contoh: Sipirok"
+                                    value="{{ old('wilayah') }}"
                                     class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm">
                             </div>
                         </div>
@@ -232,6 +236,7 @@
                                 @foreach ($kategori as $kat)
                                     <label class="cursor-pointer relative">
                                         <input type="radio" name="kategori" value="{{ $kat['id'] }}" required
+                                            {{ old('kategori') == $kat['id'] ? 'checked' : '' }}
                                             class="category-radio peer sr-only">
                                         <div
                                             class="border border-gray-200 rounded-xl p-3 text-center hover:border-blue-300 transition h-full flex flex-col items-center justify-center">
@@ -247,7 +252,8 @@
                         <div class="mb-6">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Judul Aspirasi <span
                                     class="text-red-500">*</span></label>
-                            <input type="text" name="judul" required placeholder="Ringkasan singkat aspirasi Anda..."
+                            <input type="text" name="judul" required
+                                placeholder="Ringkasan singkat aspirasi Anda..." value="{{ old('judul') }}"
                                 class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm">
                         </div>
 
@@ -256,7 +262,7 @@
                                     class="text-red-500">*</span></label>
                             <textarea name="isi" rows="5" required
                                 placeholder="Jelaskan aspirasi, keluhan, atau saran Anda secara detail..."
-                                class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm resize-none"></textarea>
+                                class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm resize-none">{{ old('isi') }}</textarea>
                         </div>
 
                         <div class="flex justify-between text-xs text-gray-400 mb-6">
@@ -278,35 +284,40 @@
 
                                 <div class="w-full">
                                     <input type="text" id="koordinat_lokasi" name="koordinat_lokasi" required readonly
-                                        placeholder="Lokasi belum diambil..."
+                                        placeholder="Lokasi belum diambil..." value="{{ old('koordinat_lokasi') }}"
                                         class="w-full bg-white border border-gray-300 rounded-lg px-4 py-2.5 outline-none text-sm font-mono text-gray-500 cursor-not-allowed placeholder-red-400">
-                                    <input type="hidden" id="latitude" name="latitude">
-                                    <input type="hidden" id="longitude" name="longitude">
+                                    <input type="hidden" id="latitude" name="latitude" value="{{ old('latitude') }}">
+                                    <input type="hidden" id="longitude" name="longitude"
+                                        value="{{ old('longitude') }}">
                                 </div>
                             </div>
                         </div>
 
-                        {{-- PERUBAHAN DI SINI: Input Gambar Multiple --}}
+                        {{-- PERUBAHAN DI SINI: Input Gambar Multiple dengan UI yang Diperbaiki --}}
                         <div class="mb-8">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Unggah Foto Bukti <span
-                                    class="text-gray-400 font-normal">(Opsional - Maks. 2 Gambar, @5MB)</span></label>
-                            <div
-                                class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-blue-400 hover:bg-blue-50 transition duration-300 bg-gray-50 group">
-                                <div class="space-y-2 text-center">
+                                    class="text-gray-400 font-normal text-xs">(Opsional)</span></label>
+
+                            <div id="drop-zone"
+                                class="mt-1 flex flex-col justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-blue-500 hover:bg-blue-50 transition duration-300 bg-gray-50 cursor-pointer relative group">
+
+                                <div class="space-y-2 text-center" id="upload-prompt">
                                     <i
-                                        class="fa-solid fa-cloud-arrow-up text-gray-400 group-hover:text-blue-500 text-3xl mb-1 transition"></i>
-                                    <div class="flex text-sm text-gray-600 justify-center items-center">
-                                        <label for="file-upload"
-                                            class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-700 focus-within:outline-none px-3 py-1.5 shadow-sm border border-gray-200 hover:border-blue-300 transition">
-                                            <span>Pilih File</span>
-                                            {{-- NAME DIUBAH JADI images[] DAN DITAMBAH MULTIPLE --}}
-                                            <input id="file-upload" name="images[]" type="file" class="sr-only"
-                                                accept=".jpg,.jpeg,.png" multiple>
-                                        </label>
-                                        <p class="pl-2 pt-1 text-xs">atau seret gambar ke sini</p>
+                                        class="fa-solid fa-cloud-arrow-up text-gray-400 group-hover:text-blue-500 text-4xl mb-2 transition"></i>
+                                    <div class="flex flex-col text-sm text-gray-600 justify-center items-center gap-2">
+                                        <span
+                                            class="bg-white rounded-lg font-bold text-blue-600 px-4 py-2 shadow-sm border border-gray-200 group-hover:border-blue-300 transition">Pilih
+                                            File Gambar</span>
+                                        <p class="text-xs font-medium mt-1">atau seret dan lepas gambar ke sini</p>
                                     </div>
-                                    <p class="text-xs text-gray-500">Hanya JPG, JPEG, PNG (Bisa memilih 2 file sekaligus)
-                                    </p>
+                                    <p class="text-xs text-gray-500 mt-2">Hanya format JPG, JPEG, PNG (Maksimal 2 file,
+                                        @5MB)</p>
+                                </div>
+
+                                <input id="file-upload" name="images[]" type="file" class="sr-only"
+                                    accept=".jpg,.jpeg,.png" multiple>
+
+                                <div id="file-list" class="mt-5 hidden flex-col gap-2 w-full max-w-md mx-auto">
                                 </div>
                             </div>
                         </div>
@@ -384,19 +395,114 @@
             const inputLat = document.getElementById('latitude');
             const inputLng = document.getElementById('longitude');
 
-            // JS Tambahan: Menampilkan nama file gambar yang dipilih
+            // ==========================================
+            // LOGIKA DRAG & DROP SERTA PREVIEW GAMBAR (PERBAIKAN)
+            // ==========================================
+            const dropZone = document.getElementById('drop-zone');
             const fileUpload = document.getElementById('file-upload');
-            if (fileUpload) {
-                fileUpload.addEventListener('change', function(e) {
-                    const files = e.target.files;
-                    if (files.length > 2) {
-                        alert('Maksimal hanya 2 gambar yang diperbolehkan!');
-                        e.target.value = ''; // Reset input
-                    } else if (files.length > 0) {
-                        let text = files.length === 1 ? files[0].name : `${files.length} file dipilih`;
-                        e.target.parentElement.nextElementSibling.innerText = text;
+            const fileList = document.getElementById('file-list');
+
+            // Memicu jendela pencarian file hanya jika area luar preview yang diklik
+            dropZone.addEventListener('click', function(e) {
+                if (!fileList.contains(e.target)) {
+                    fileUpload.click();
+                }
+            });
+
+            // Mencegah pembukaan gambar langsung oleh browser bawaan
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+                document.body.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            // Efek visual saat file diseret di atas kotak
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => {
+                    dropZone.classList.add('border-blue-500', 'bg-blue-100');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => {
+                    dropZone.classList.remove('border-blue-500', 'bg-blue-100');
+                }, false);
+            });
+
+            // Menangani kejadian jatuhnya file (Drop)
+            dropZone.addEventListener('drop', function(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+
+                if (files.length > 2) {
+                    alert('Maksimal hanya 2 gambar yang diperbolehkan!');
+                    return;
+                }
+
+                const dataTransfer = new DataTransfer();
+                for (let i = 0; i < files.length; i++) {
+                    if (!files[i].type.match('image.*')) {
+                        alert('Hanya file gambar (JPG/JPEG/PNG) yang diperbolehkan!');
+                        return;
                     }
+                    dataTransfer.items.add(files[i]);
+                }
+
+                // Tempel data transfer ke element input file
+                fileUpload.files = dataTransfer.files;
+                updateUI(fileUpload.files);
+            }, false);
+
+            // Menangani pilihan file secara manual lewat tombol browser (Klik)
+            if (fileUpload) {
+                fileUpload.addEventListener('change', function() {
+                    if (this.files.length > 2) {
+                        alert('Maksimal hanya 2 gambar yang diperbolehkan!');
+                        this.value = ''; // Kosongkan kembali
+                        fileList.innerHTML = '';
+                        fileList.classList.add('hidden');
+                        return;
+                    }
+                    // Langsung jalankan UI update tanpa merusak properti .files bawaan browser
+                    updateUI(this.files);
                 });
+            }
+
+            // Fungsi render tampilan list pratinjau file
+            function updateUI(files) {
+                fileList.innerHTML = ''; // Reset tampilan kontainer lama
+
+                if (files.length > 0) {
+                    fileList.classList.remove('hidden');
+                    Array.from(files).forEach(file => {
+                        let fileSize = (file.size / 1024 / 1024).toFixed(2);
+
+                        const div = document.createElement('div');
+                        div.className =
+                            'flex items-center justify-between p-3 bg-white border border-green-300 rounded-lg shadow-sm';
+                        // Gunakan event.stopPropagation agar klik di dalam kotak hijau tidak memicu buka file picker
+                        div.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                        });
+
+                        div.innerHTML = `
+                            <div class="flex items-center gap-3 truncate">
+                                <div class="w-8 h-8 rounded-md bg-green-100 text-green-600 flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-image"></i>
+                                </div>
+                                <span class="text-sm font-bold text-gray-700 truncate">${file.name}</span>
+                            </div>
+                            <span class="text-[10px] text-gray-500 font-mono bg-gray-100 px-2 py-1 rounded-md shrink-0 border border-gray-200">${fileSize} MB</span>
+                        `;
+                        fileList.appendChild(div);
+                    });
+                } else {
+                    fileList.classList.add('hidden');
+                }
             }
 
             if (btnLokasi) {
@@ -450,7 +556,7 @@
                     } else {
                         alert(
                             "Browser Anda tidak mendukung fitur lokasi (Geolocation). Harap gunakan browser versi terbaru."
-                            );
+                        );
                     }
                 });
             }

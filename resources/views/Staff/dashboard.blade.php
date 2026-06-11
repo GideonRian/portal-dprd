@@ -43,39 +43,43 @@
                 class="gradient-blue rounded-2xl p-6 text-white shadow-lg transform hover:-translate-y-1 transition duration-300">
                 <div class="flex justify-between items-start">
                     <i class="fa-solid fa-users text-3xl opacity-80"></i>
-                    <h3 class="text-4xl font-black">85</h3>
+                    <h3 class="text-4xl font-black">{{ $total_anggota }}</h3>
                 </div>
                 <p class="mt-4 font-bold text-sm">Total Anggota</p>
             </div>
+
             <div
                 class="gradient-purple rounded-2xl p-6 text-white shadow-lg transform hover:-translate-y-1 transition duration-300">
                 <div class="flex justify-between items-start">
                     <i class="fa-regular fa-newspaper text-3xl opacity-80"></i>
-                    <h3 class="text-4xl font-black">142</h3>
+                    <h3 class="text-4xl font-black">{{ $total_berita }}</h3>
                 </div>
                 <p class="mt-4 font-bold text-sm">Total Berita</p>
             </div>
+
             <div
                 class="gradient-green rounded-2xl p-6 text-white shadow-lg transform hover:-translate-y-1 transition duration-300">
                 <div class="flex justify-between items-start">
                     <i class="fa-regular fa-message text-3xl opacity-80"></i>
-                    <h3 class="text-4xl font-black">67</h3>
+                    <h3 class="text-4xl font-black">{{ $total_aspirasi }}</h3>
                 </div>
                 <p class="mt-4 font-bold text-sm">Aspirasi Masuk</p>
             </div>
+
             <div
                 class="gradient-red rounded-2xl p-6 text-white shadow-lg transform hover:-translate-y-1 transition duration-300">
                 <div class="flex justify-between items-start">
                     <i class="fa-regular fa-file-lines text-3xl opacity-80"></i>
-                    <h3 class="text-4xl font-black">48</h3>
+                    <h3 class="text-4xl font-black">{{ $total_dokumen }}</h3>
                 </div>
                 <p class="mt-4 font-bold text-sm">Total Dokumen</p>
             </div>
+
             <div
                 class="gradient-orange rounded-2xl p-6 text-white shadow-lg transform hover:-translate-y-1 transition duration-300">
                 <div class="flex justify-between items-start">
                     <i class="fa-regular fa-calendar text-3xl opacity-80"></i>
-                    <h3 class="text-4xl font-black">35</h3>
+                    <h3 class="text-4xl font-black">{{ $total_agenda }}</h3>
                 </div>
                 <p class="mt-4 font-bold text-sm">Agenda Kegiatan</p>
             </div>

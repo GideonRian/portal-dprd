@@ -25,27 +25,56 @@
                     class="fa-solid fa-check-circle mr-1"></i> {{ session('success') }}</div>
         @endif
 
-        <!-- 4 Kotak Statistik -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-blue-500 text-white p-5 rounded-2xl shadow-md border-b-4 border-blue-700">
-                <h3 class="text-3xl font-bold mb-1">{{ $stats['total'] }}</h3>
-                <p class="text-sm font-medium">Total Dokumen</p>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+
+            <div
+                class="col-span-2 md:col-span-3 lg:col-span-2 bg-blue-500 text-white p-5 rounded-2xl shadow-md border-b-4 border-blue-700 flex flex-col items-center justify-center text-center relative overflow-hidden min-h-[120px]">
+                <div class="relative z-10">
+                    <h3 class="text-3xl lg:text-4xl font-bold mb-1">{{ $stats['total'] }}</h3>
+                    <p class="text-sm font-medium opacity-90">Total Keseluruhan Dokumen</p>
+                </div>
+                <i
+                    class="fa-solid fa-boxes-stacked text-5xl opacity-15 absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none"></i>
             </div>
-            <div class="bg-purple-500 text-white p-5 rounded-2xl shadow-md border-b-4 border-purple-700">
+
+            <div
+                class="bg-purple-500 text-white p-5 rounded-2xl shadow-md border-b-4 border-purple-700 hover:-translate-y-1 transition duration-300 flex flex-col items-center justify-center text-center min-h-[120px]">
                 <h3 class="text-3xl font-bold mb-1">{{ $stats['perda'] }}</h3>
-                <p class="text-sm font-medium">Peraturan Daerah</p>
+                <p class="text-sm font-medium opacity-90">Peraturan Daerah</p>
             </div>
-            <div class="bg-emerald-500 text-white p-5 rounded-2xl shadow-md border-b-4 border-emerald-700">
+
+            <div
+                class="bg-rose-500 text-white p-5 rounded-2xl shadow-md border-b-4 border-rose-700 hover:-translate-y-1 transition duration-300 flex flex-col items-center justify-center text-center min-h-[120px]">
+                <h3 class="text-3xl font-bold mb-1">{{ $stats['keputusan'] }}</h3>
+                <p class="text-sm font-medium opacity-90">Keputusan DPRD</p>
+            </div>
+
+            <div
+                class="bg-emerald-500 text-white p-5 rounded-2xl shadow-md border-b-4 border-emerald-700 hover:-translate-y-1 transition duration-300 flex flex-col items-center justify-center text-center min-h-[120px]">
                 <h3 class="text-3xl font-bold mb-1">{{ $stats['risalah'] }}</h3>
-                <p class="text-sm font-medium">Risalah Rapat</p>
+                <p class="text-sm font-medium opacity-90">Risalah Rapat</p>
             </div>
-            <div class="bg-amber-500 text-white p-5 rounded-2xl shadow-md border-b-4 border-amber-700">
+
+            <div
+                class="bg-amber-500 text-white p-5 rounded-2xl shadow-md border-b-4 border-amber-700 hover:-translate-y-1 transition duration-300 flex flex-col items-center justify-center text-center min-h-[120px]">
                 <h3 class="text-3xl font-bold mb-1">{{ $stats['laporan'] }}</h3>
-                <p class="text-sm font-medium">Laporan</p>
+                <p class="text-sm font-medium opacity-90">Laporan Keuangan</p>
             </div>
+
+            <div
+                class="bg-cyan-500 text-white p-5 rounded-2xl shadow-md border-b-4 border-cyan-700 hover:-translate-y-1 transition duration-300 flex flex-col items-center justify-center text-center min-h-[120px]">
+                <h3 class="text-3xl font-bold mb-1">{{ $stats['hearing'] }}</h3>
+                <p class="text-sm font-medium opacity-90">Hasil Hearing</p>
+            </div>
+
+            <div
+                class="bg-indigo-500 text-white p-5 rounded-2xl shadow-md border-b-4 border-indigo-700 hover:-translate-y-1 transition duration-300 flex flex-col items-center justify-center text-center min-h-[120px]">
+                <h3 class="text-3xl font-bold mb-1">{{ $stats['tatib'] }}</h3>
+                <p class="text-sm font-medium opacity-90">Tata Tertib</p>
+            </div>
+
         </div>
 
-        <!-- Filter & Search -->
         <form action="{{ route('staff.dokumen.index') }}" method="GET" class="flex flex-col md:flex-row gap-4 mb-8">
             <div class="relative flex-1">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
@@ -77,11 +106,10 @@
 
         <p class="text-sm text-gray-500 mb-4">Menampilkan {{ $dokumens->count() }} dokumen</p>
 
-        <!-- Daftar Dokumen Bergaya List Card -->
         <div class="space-y-4">
             @forelse($dokumens as $doc)
                 <div
-                    class="bg-white rounded-2xl shadow-sm hover:shadow-md transition border border-gray-100 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    class="bg-white rounded-2xl shadow-sm hover:shadow-md transition border border-gray-100 p-5 flex flex-col md:flex-row md:items-start justify-between gap-4">
 
                     <div class="flex-1">
                         <div class="flex items-center gap-3 mb-2 text-xs">
@@ -91,15 +119,41 @@
                             <span class="text-gray-400"><i class="fa-regular fa-calendar mr-1"></i>
                                 {{ \Carbon\Carbon::parse($doc->created_at)->format('d F Y') }}</span>
                         </div>
-                        <h3 class="text-lg font-bold text-gray-900 mb-1">{{ $doc->judul }}</h3>
-                        <p class="text-gray-500 text-sm mb-2 line-clamp-1">{{ $doc->deskripsi }}</p>
+
+                        <h3 class="text-lg font-bold text-gray-900 mb-1 flex flex-wrap items-center gap-2">
+                            {{ $doc->judul }}
+
+                            @if ($doc->isPending())
+                                <span class="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full"><i
+                                        class="fa-solid fa-clock"></i> Menunggu Review</span>
+                            @elseif($doc->isApproved())
+                                <span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full"><i
+                                        class="fa-solid fa-circle-check"></i> Live Publik</span>
+                            @elseif($doc->isRejected())
+                                <span class="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded-full"><i
+                                        class="fa-solid fa-circle-xmark"></i> Ditolak/Revisi</span>
+                            @endif
+                        </h3>
+
+                        @if ($doc->catatan_persetujuan)
+                            <div
+                                class="mt-2 mb-3 p-3 rounded-lg text-sm border {{ $doc->isRejected() ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200' }}">
+                                <span class="font-bold {{ $doc->isRejected() ? 'text-red-700' : 'text-blue-700' }}">
+                                    <i class="fa-solid fa-comment-dots mr-1"></i> Catatan Pimpinan:
+                                </span>
+                                <p class="text-gray-700 mt-1 italic">"{{ $doc->catatan_persetujuan }}"</p>
+                            </div>
+                        @endif
+
+                        <p class="text-gray-500 text-sm mb-2 line-clamp-2">{{ $doc->deskripsi }}</p>
+
                         <div
                             class="text-xs font-mono text-gray-400 bg-gray-50 px-2 py-1 rounded w-max border border-gray-100">
                             File: {{ $doc->nama_file }}
                         </div>
                     </div>
 
-                    <div class="flex flex-row md:flex-col gap-2 shrink-0">
+                    <div class="flex flex-row md:flex-col gap-2 shrink-0 md:mt-0 mt-4 w-full md:w-auto">
                         <a href="{{ route('staff.dokumen.edit', $doc->id) }}"
                             class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition shadow-sm">
                             <i class="fa-regular fa-pen-to-square"></i> Edit

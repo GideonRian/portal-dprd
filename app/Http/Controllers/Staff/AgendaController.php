@@ -5,35 +5,36 @@ namespace App\Http\Controllers\Staff;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Agenda;
+use App\Models\ActivityLog; // <-- TAMBAHAN: Import Model ActivityLog
 use Illuminate\Support\Facades\Storage;
 
 class AgendaController extends Controller
 {
     public function index(Request $request)
-{
-    // Logika Otomatisasi Status: 
-    // Cari agenda yang masih 'Akan Datang' tapi tanggalnya sudah lewat (kemarin atau sebelumnya)
-    \App\Models\Agenda::where('status', 'Akan Datang')
-        ->where('tanggal', '<', now()->toDateString())
-        ->update(['status' => 'Selesai']);
+    {
+        // Logika Otomatisasi Status: 
+        \App\Models\Agenda::where('status', 'Akan Datang')
+            ->where('tanggal', '<', now()->toDateString())
+            ->update(['status' => 'Selesai']);
 
-    $search = $request->input('search');
-    $kategori = $request->input('kategori');
+        $search = $request->input('search');
+        $kategori = $request->input('kategori');
 
-    $stats = [
-        'total' => Agenda::count(),
-        'mendatang' => Agenda::where('status', 'Akan Datang')->count(),
-        'selesai' => Agenda::where('status', 'Selesai')->count(),
-    ];
+        $stats = [
+            'total' => Agenda::count(),
+            'mendatang' => Agenda::where('status', 'Akan Datang')->count(),
+            'selesai' => Agenda::where('status', 'Selesai')->count(),
+        ];
 
-    $agendas = Agenda::when($search, function($q) use ($search) {
-        return $q->where('judul', 'like', "%$search%");
-    })->when($kategori && $kategori !== 'Semua Kategori', function($q) use ($kategori) {
-        return $q->where('kategori', $kategori);
-    })->latest('tanggal')->get();
+        $agendas = Agenda::when($search, function($q) use ($search) {
+            return $q->where('judul', 'like', "%$search%");
+        })->when($kategori && $kategori !== 'Semua Kategori', function($q) use ($kategori) {
+            return $q->where('kategori', $kategori);
+        })->latest('tanggal')->get();
 
-    return view('Staff.Agenda.index', compact('agendas', 'stats', 'search', 'kategori'));
-}
+        return view('Staff.Agenda.index', compact('agendas', 'stats', 'search', 'kategori'));
+    }
+
     public function create() { return view('Staff.Agenda.create'); }
 
     public function store(Request $request)
@@ -55,6 +56,10 @@ class AgendaController extends Controller
         }
 
         Agenda::create($data);
+
+        // <-- TAMBAHAN: Catat Log Tambah Data
+        ActivityLog::record('Agenda', 'Create', "Menambahkan agenda baru: {$data['judul']}");
+
         return redirect()->route('staff.agenda.index')->with('success', 'Agenda berhasil ditambahkan!');
     }
 
@@ -80,18 +85,28 @@ class AgendaController extends Controller
         }
 
         $agenda->update($data);
+
+        // <-- TAMBAHAN: Catat Log Update Data
+        ActivityLog::record('Agenda', 'Update', "Memperbarui data agenda: {$data['judul']}");
+
         return redirect()->route('staff.agenda.index')->with('success', 'Agenda berhasil diperbarui!');
     }
     
     public function show(Agenda $agenda)
     {
-    return view('Staff.Agenda.show', compact('agenda'));
+        return view('Staff.Agenda.show', compact('agenda'));
     }
 
     public function destroy(Agenda $agenda)
     {
+        $judulAgenda = $agenda->judul; // Simpan judul sebelum dihapus untuk keperluan log
+
         if ($agenda->gambar) Storage::disk('public')->delete($agenda->gambar);
         $agenda->delete();
+
+        // <-- TAMBAHAN: Catat Log Hapus Data
+        ActivityLog::record('Agenda', 'Delete', "Menghapus agenda: {$judulAgenda}");
+
         return redirect()->route('staff.agenda.index')->with('success', 'Agenda berhasil dihapus!');
     }
 }
