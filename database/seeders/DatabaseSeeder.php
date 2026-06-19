@@ -16,15 +16,20 @@ class DatabaseSeeder extends Seeder
             'username' => 'staffdprdtapsel',
             'password' => bcrypt('bangke123'),
             'role'     => 'staff',
+            'is_active'        => true,
         ]);
 
-        // 2. TAMBAHAN: Membuat akun Sekretaris Default
+        // 2. Membuat akun Sekretaris Default
         User::create([
             'name'     => 'Sekretaris DPRD',
             'email'    => 'sekretaris@dprd-tapsel.go.id',
             'username' => 'sekretarisdprdtapsel',
-            'password' => bcrypt('sekretaris123'), // Silakan ganti password-nya sesuai keinginan
+            'password' => bcrypt('sekretaris123'),
             'role'     => 'sekretaris',
+            'is_active'        => true,
         ]);
+
+        // 3. PANGGIL SUPER ADMIN SEEDER DI SINI
+        $this->call(SuperAdminSeeder::class);
     }
 }

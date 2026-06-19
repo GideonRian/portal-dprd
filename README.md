@@ -45,6 +45,9 @@ cd repo-aspirasi-dprd
 # Instal library PHP
 composer install
 
+# jika bermasalah 2FA google nya hehe
+composer require pragmarx/google2fa
+
 # Instal paket JavaScript & Kompilasi Aset
 npm install
 npm run build
@@ -57,6 +60,9 @@ copy .env.example .env
 
 php artisan key:generate
 
+# semisal sudah terhubung github(sudah saling pull dan push)
+php artisan optimize:clear
+
 # 5. Konfigurasi Database di file .env
 # DB_CONNECTION=mysql
 # DB_HOST=127.0.0.1
@@ -66,7 +72,7 @@ php artisan key:generate
 # DB_PASSWORD=
 
 # 6. Jalankan Migrasi dan Seeder (jika ada)
-php artisan migrate --seed
+php artisan migrate:fresh --seed
 
 # 7. Jalankan local development server
 php artisan serve

@@ -124,7 +124,6 @@
                             <th class="px-6 py-4">Module</th>
                             <th class="px-6 py-4">Action</th>
                             <th class="px-6 py-4">Description</th>
-                            <th class="px-6 py-4 text-center">Details</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -165,17 +164,10 @@
                                 <td class="px-6 py-4 text-sm text-gray-700 min-w-[250px]">
                                     {{ $log->description }}
                                 </td>
-                                <td class="px-6 py-4 text-center">
-                                    <button
-                                        class="text-purple-600 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 p-2 rounded-lg transition"
-                                        title="Lihat Detail">
-                                        <i class="fa-solid fa-eye"></i>
-                                    </button>
-                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-20 text-center">
+                                <td colspan="5" class="px-6 py-20 text-center">
                                     <div class="flex flex-col items-center justify-center">
                                         <i class="fa-solid fa-heart-pulse text-5xl text-gray-300 mb-4"></i>
                                         <h3 class="text-gray-500 font-bold text-lg mb-1">Tidak ada log ditemukan</h3>

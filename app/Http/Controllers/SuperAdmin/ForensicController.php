@@ -8,32 +8,60 @@ use Illuminate\Http\Request;
 
 class ForensicController extends Controller
 {
-    public function index()
+    /**
+     * Menangani Tampilan Halaman Utama Digital Footprint / Forensik
+     */
+    public function index(Request $request)
     {
-        // 1. TAB: Aktivitas Mencurigakan (Hanya ambil status Warning & Error)
-        $suspiciousActivities = ActivityLog::with('user')
+        $search = $request->input('search');
+
+        // TAMBAHKAN query() DI SINI
+        // 1. TAB: Aktivitas Mencurigakan
+        $suspiciousActivities = ActivityLog::query()
+            ->with('user')
             ->whereIn('status', ['warning', 'error'])
+            ->when($search, function($query) use ($search) {
+                $query->where('description', 'like', "%{$search}%");
+            })
             ->latest()
+            ->take(100) 
             ->get();
 
-        // 2. TAB: Data Changes (Hanya ambil log yang punya riwayat perubahan data)
-        $dataChanges = ActivityLog::with('user')
+        // TAMBAHKAN query() DI SINI
+        // 2. TAB: Data Changes (Audit Trail)
+        $dataChanges = ActivityLog::query()
+            ->with('user')
             ->where(function($query) {
                 $query->whereNotNull('old_data')->orWhereNotNull('new_data');
             })
+            ->when($search, function($query) use ($search) {
+                $query->where('description', 'like', "%{$search}%")
+                      ->orWhere('module', 'like', "%{$search}%");
+            })
             ->latest()
+            ->take(100)
             ->get();
 
-        // 3. TAB: Login History (Hanya ambil aktivitas dari modul Autentikasi)
-        $loginHistory = ActivityLog::with('user')
+        // TAMBAHKAN query() DI SINI
+        // 3. TAB: Login History
+        $loginHistory = ActivityLog::query()
+            ->with('user')
             ->where('module', 'Autentikasi')
+            ->when($search, function($query) use ($search) {
+                $query->whereHas('user', function($q) use ($search) {
+                    $q->where('username', 'like', "%{$search}%")
+                      ->orWhere('name', 'like', "%{$search}%");
+                });
+            })
             ->latest()
+            ->take(100)
             ->get();
 
-        // Hitung Widget Atas
-        $highRisk = ActivityLog::where('status', 'error')->count();
-        $mediumRisk = ActivityLog::where('status', 'warning')->count();
-        $lowRisk = ActivityLog::where('module', 'Autentikasi')->where('status', 'success')->count();
+        // TAMBAHKAN query() DI SINI JUGA
+        // Hitung Widget Atas (Real-time)
+        $highRisk = ActivityLog::query()->where('status', 'error')->count();
+        $mediumRisk = ActivityLog::query()->where('status', 'warning')->count();
+        $lowRisk = ActivityLog::query()->where('module', 'Autentikasi')->where('status', 'success')->count();
 
         return view('SuperAdmin.more.forensics', compact(
             'suspiciousActivities', 'dataChanges', 'loginHistory',

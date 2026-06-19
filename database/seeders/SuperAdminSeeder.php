@@ -19,7 +19,8 @@ class SuperAdminSeeder extends Seeder
             'username' => 'superadmin', // Sesuai dengan form login kamu
             'email' => 'superadmin@dprd-tapsel.go.id',
             'password' => Hash::make('admin123'),
-            
+            'role'             => 'superadmin',
+            'is_active'        => true,
             // Generate kunci rahasia unik saat akun dibuat!
             'google2fa_secret' => $google2fa->generateSecretKey(),
         ]);

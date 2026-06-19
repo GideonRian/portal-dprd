@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Auditable;
 
 class Dokumen extends Model
 {
+    use HasFactory, Auditable;
     // Mengizinkan semua kolom diisi secara massal
     protected $guarded = [];
 

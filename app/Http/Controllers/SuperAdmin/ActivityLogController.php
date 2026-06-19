@@ -10,7 +10,12 @@ class ActivityLogController extends Controller
 {
     public function index(Request $request)
     {
-        $query = ActivityLog::with('user')->latest();
+        // PERUBAHAN DI SINI: Tambahkan query() dan filter whereNull
+        $query = ActivityLog::query()
+            ->with('user')
+            ->whereNull('old_data')
+            ->whereNull('new_data')
+            ->latest();
 
         // Fitur Pencarian
         if ($request->filled('search')) {
@@ -56,7 +61,14 @@ class ActivityLogController extends Controller
     // Fungsi untuk tombol Export CSV
     public function exportCsv(Request $request)
     {
-        $logs = ActivityLog::with('user')->latest()->get();
+        // PERUBAHAN DI SINI: Pastikan data CSV juga bersih dari log Audit (old_data/new_data)
+        $logs = ActivityLog::query()
+            ->with('user')
+            ->whereNull('old_data')
+            ->whereNull('new_data')
+            ->latest()
+            ->get();
+            
         $filename = "activity_logs_" . date('Y-m-d_H-i') . ".csv";
         
         $handle = fopen('php://memory', 'w');

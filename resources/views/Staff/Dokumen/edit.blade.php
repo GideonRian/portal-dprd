@@ -25,12 +25,18 @@
                 <div class="mb-6">
                     <label class="block text-sm font-bold text-gray-700 mb-2">Upload File Baru <span
                             class="text-gray-400 font-normal">(Opsional)</span></label>
-                    <div
-                        class="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:bg-gray-50 transition relative">
-                        <i class="fa-solid fa-arrow-up-from-bracket text-2xl text-gray-400 mb-2"></i>
-                        <p class="font-bold text-gray-700 text-sm">Klik untuk upload file pengganti</p>
-                        <p class="text-xs text-gray-500 mt-1">Biarkan kosong jika tidak ingin mengubah file saat ini.</p>
-                        <input type="file" name="file_dokumen" accept=".pdf,.doc,.docx,.xls,.xlsx"
+                    <div class="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:bg-gray-50 transition relative group"
+                        id="upload-zone">
+
+                        <!-- Ikon dan Teks Default -->
+                        <i id="upload-icon"
+                            class="fa-solid fa-arrow-up-from-bracket text-2xl text-gray-400 mb-2 group-hover:text-rose-500 transition"></i>
+                        <p id="file-name" class="font-bold text-gray-700 text-sm">Klik untuk upload file pengganti</p>
+                        <p id="file-hint" class="text-xs text-gray-500 mt-1">Biarkan kosong jika tidak ingin mengubah file
+                            saat ini.</p>
+
+                        <!-- Input File -->
+                        <input type="file" name="file_dokumen" id="file-input" accept=".pdf,.doc,.docx,.xls,.xlsx"
                             class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                     </div>
                 </div>
@@ -75,12 +81,14 @@
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Tipe File</label>
                         <input type="text" name="tipe_file" value="{{ $dokumen->tipe_file }}"
-                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-rose-500 outline-none bg-gray-50">
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-rose-500 outline-none bg-gray-50"
+                            readonly>
                     </div>
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Nama File</label>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Nama File Terlampir</label>
                         <input type="text" name="nama_file" value="{{ $dokumen->nama_file }}"
-                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-rose-500 outline-none bg-gray-50">
+                            class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-rose-500 outline-none bg-gray-50"
+                            readonly>
                     </div>
                 </div>
 
@@ -102,4 +110,41 @@
             </form>
         </div>
     </div>
+
+    <!-- Script Tambahan untuk Preview Nama File -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('file-input');
+            const fileName = document.getElementById('file-name');
+            const fileHint = document.getElementById('file-hint');
+            const uploadIcon = document.getElementById('upload-icon');
+            const uploadZone = document.getElementById('upload-zone');
+
+            fileInput.addEventListener('change', function(e) {
+                if (this.files && this.files.length > 0) {
+                    const file = this.files[0];
+                    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+
+                    // Update UI untuk menunjukkan file berhasil di attach
+                    fileName.textContent = file.name;
+                    fileName.classList.add('text-rose-600');
+                    fileHint.textContent = `Ukuran file: ${fileSizeMB} MB`;
+
+                    // Ganti ikon menjadi file sukses
+                    uploadIcon.classList.replace('fa-arrow-up-from-bracket', 'fa-file-circle-check');
+                    uploadIcon.classList.replace('text-gray-400', 'text-rose-500');
+                    uploadZone.classList.add('border-rose-300', 'bg-rose-50');
+                } else {
+                    // Reset UI jika file dibatalkan
+                    fileName.textContent = 'Klik untuk upload file pengganti';
+                    fileName.classList.remove('text-rose-600');
+                    fileHint.textContent = 'Biarkan kosong jika tidak ingin mengubah file saat ini.';
+
+                    uploadIcon.classList.replace('fa-file-circle-check', 'fa-arrow-up-from-bracket');
+                    uploadIcon.classList.replace('text-rose-500', 'text-gray-400');
+                    uploadZone.classList.remove('border-rose-300', 'bg-rose-50');
+                }
+            });
+        });
+    </script>
 @endsection

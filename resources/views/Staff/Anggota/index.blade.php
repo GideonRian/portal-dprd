@@ -20,12 +20,22 @@
             </a>
         </div>
 
-        {{-- Flash Message --}}
-        @if (session('success'))
-            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 px-4 py-3 rounded-xl mb-6 shadow-sm">
-                <i class="fa-solid fa-check-circle mr-1"></i> {{ session('success') }}
-            </div>
-        @endif
+        {{-- Flash Messages (Notifikasi) --}}
+        <div id="notification-container">
+            @if (session('success'))
+                <div
+                    class="alert-message bg-green-100 border-l-4 border-green-500 text-green-700 px-4 py-3 rounded-xl mb-6 shadow-sm transition-all duration-500 transform opacity-100 translate-y-0">
+                    <i class="fa-solid fa-check-circle mr-1"></i> {{ session('success') }}
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div
+                    class="alert-message bg-red-100 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-xl mb-6 shadow-sm transition-all duration-500 transform opacity-100 translate-y-0">
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i> {{ session('error') }}
+                </div>
+            @endif
+        </div>
 
         {{-- Search Bar --}}
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6">
@@ -99,4 +109,27 @@
             </div>
         </div>
     </div>
+
+    {{-- Script untuk auto-hide notifikasi --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mengambil semua elemen dengan class 'alert-message'
+            const alerts = document.querySelectorAll('.alert-message');
+
+            alerts.forEach(function(alert) {
+                // Menunggu 5 detik (5000 ms)
+                setTimeout(() => {
+                    // Menambahkan efek fade out (menghilang secara halus) ke atas
+                    alert.classList.remove('opacity-100', 'translate-y-0');
+                    alert.classList.add('opacity-0', '-translate-y-4');
+
+                    // Menunggu animasi selesai (500ms sesuai dengan duration-500) lalu menghapus elemen dari HTML
+                    setTimeout(() => {
+                        alert.style.display = 'none';
+                        alert.remove();
+                    }, 500);
+                }, 5000);
+            });
+        });
+    </script>
 @endsection

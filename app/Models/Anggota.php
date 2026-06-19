@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Auditable; // <-- 1. TAMBAHKAN IMPORT INI
 
 class Anggota extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable; // <-- 2. GABUNGKAN DI SEBELAH HASFACTORY
 
     // Mendefinisikan secara ketat kolom apa saja yang boleh diisi dari Form
     protected $fillable = [
