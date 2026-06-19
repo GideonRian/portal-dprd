@@ -20,13 +20,22 @@
             </a>
         </div>
 
-        @if (session('success'))
-            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 px-4 py-3 rounded-xl mb-6 shadow-sm">
-                <i class="fa-solid fa-check-circle mr-1"></i> {{ session('success') }}
-            </div>
-        @endif
+        <div id="notification-container">
+            @if (session('success'))
+                <div
+                    class="alert-message bg-green-100 border-l-4 border-green-500 text-green-700 px-4 py-3 rounded-xl mb-6 shadow-sm transition-all duration-500 transform opacity-100 translate-y-0">
+                    <i class="fa-solid fa-check-circle mr-1"></i> {{ session('success') }}
+                </div>
+            @endif
 
-        <!-- Filter & Pencarian -->
+            @if (session('error'))
+                <div
+                    class="alert-message bg-red-100 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-xl mb-6 shadow-sm transition-all duration-500 transform opacity-100 translate-y-0">
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i> {{ session('error') }}
+                </div>
+            @endif
+        </div>
+
         <form action="{{ route('staff.berita.index') }}" method="GET" class="flex flex-col md:flex-row gap-4 mb-8">
             <div class="relative flex-1">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
@@ -53,20 +62,17 @@
             </div>
         </form>
 
-        <!-- Grid Cards Berita -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @forelse($beritas as $berita)
                 <div
                     class="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition flex flex-col relative group">
 
-                    <!-- Badge Featured (Kiri Atas Gambar) -->
                     @if ($berita->is_featured)
                         <div
                             class="absolute top-4 left-4 bg-red-500 text-white text-[10px] font-black tracking-wider px-3 py-1 rounded-md z-10 uppercase shadow-sm">
                             FEATURED</div>
                     @endif
 
-                    <!-- Gambar -->
                     <div class="h-48 bg-gray-100 relative overflow-hidden flex items-center justify-center">
                         @if (is_array($berita->gambar) && count($berita->gambar) > 0)
                             <img src="{{ asset('storage/' . $berita->gambar[0]) }}" class="w-full h-full object-cover">
@@ -75,7 +81,6 @@
                         @endif
                     </div>
 
-                    <!-- Konten Card -->
                     <div class="p-6 flex-1 flex flex-col">
                         <div class="flex items-center gap-3 mb-3 text-xs">
                             <span
@@ -88,10 +93,8 @@
                             {{ $berita->judul }}</h3>
                         <p class="text-gray-500 text-sm mb-6 line-clamp-2">{{ $berita->ringkasan }}</p>
 
-                        <!-- Tombol Aksi di Bawah Card -->
                         <div class="mt-auto flex items-center justify-between gap-2 pt-4 border-t border-gray-50">
 
-                            <!-- Form Set Unggulan -->
                             <form action="{{ route('staff.berita.toggle_featured', $berita->id) }}" method="POST"
                                 class="flex-1">
                                 @csrf @method('PATCH')
@@ -108,7 +111,6 @@
                                 @endif
                             </form>
 
-                            <!-- Edit & Delete -->
                             <a href="{{ route('staff.berita.edit', $berita->id) }}"
                                 class="w-10 h-10 flex items-center justify-center bg-purple-50 text-purple-600 rounded-xl hover:bg-purple-600 hover:text-white transition">
                                 <i class="fa-regular fa-pen-to-square"></i>
@@ -132,4 +134,27 @@
             @endforelse
         </div>
     </main>
+
+    {{-- Script untuk auto-hide notifikasi --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mengambil semua elemen dengan class 'alert-message'
+            const alerts = document.querySelectorAll('.alert-message');
+
+            alerts.forEach(function(alert) {
+                // Menunggu 5 detik (5000 ms)
+                setTimeout(() => {
+                    // Menambahkan efek fade out (menghilang secara halus) ke atas
+                    alert.classList.remove('opacity-100', 'translate-y-0');
+                    alert.classList.add('opacity-0', '-translate-y-4');
+
+                    // Menunggu animasi selesai (500ms sesuai dengan duration-500) lalu menghapus elemen dari HTML
+                    setTimeout(() => {
+                        alert.style.display = 'none';
+                        alert.remove();
+                    }, 500);
+                }, 5000);
+            });
+        });
+    </script>
 @endsection

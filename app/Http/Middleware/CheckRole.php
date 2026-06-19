@@ -19,6 +19,9 @@ class CheckRole
             if ($request->is('sekretaris*')) {
                 return redirect()->route('sekretaris.login');
             }
+            // Jika ada rute superadmin.login, Anda bisa menambahkannya di sini
+            // if ($request->is('superadmin*')) { return redirect()->route('superadmin.login'); }
+            
             return redirect()->route('staff.login');
         }
 
@@ -42,6 +45,16 @@ class CheckRole
         // 2. Jika user sudah login, tetapi role-nya tidak sesuai dengan halaman yang diakses
         if (!in_array($user->role, $roles)) {
             
+            // PENGUATAN: Kasus akun biasa mencoba menyusup ke area Superadmin
+            if ($request->is('superadmin*')) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return redirect()->route('staff.login')
+                    ->with('error', 'Akses Ilegal! Anda tidak memiliki otoritas SuperAdmin. Sesi Anda telah diakhiri.');
+            }
+
             // Kasus: Akun Staff (atau role lain) mencoba mengakses area Sekretaris
             if ($request->is('sekretaris*')) {
                 Auth::logout();

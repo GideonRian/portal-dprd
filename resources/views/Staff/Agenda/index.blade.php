@@ -42,7 +42,6 @@
     @endphp
     <div class="w-full px-4 sm:px-6 lg:px-8 py-8 max-w-screen-xl mx-auto">
 
-        <!-- HEADER: Judul & Tombol Tambah -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div class="flex items-center gap-4">
                 <div class="w-14 h-14 bg-orange-500 rounded-2xl flex items-center justify-center text-white shadow-md">
@@ -59,14 +58,22 @@
             </a>
         </div>
 
-        <!-- NOTIFIKASI SUKSES -->
-        @if (session('success'))
-            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 px-4 py-3 rounded-xl mb-6 shadow-sm">
-                <i class="fa-solid fa-check-circle mr-1"></i> {{ session('success') }}
-            </div>
-        @endif
+        <div id="notification-container">
+            @if (session('success'))
+                <div
+                    class="alert-message bg-green-100 border-l-4 border-green-500 text-green-700 px-4 py-3 rounded-xl mb-6 shadow-sm transition-all duration-500 transform opacity-100 translate-y-0">
+                    <i class="fa-solid fa-check-circle mr-1"></i> {{ session('success') }}
+                </div>
+            @endif
 
-        <!-- KARTU STATISTIK -->
+            @if (session('error'))
+                <div
+                    class="alert-message bg-red-100 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-xl mb-6 shadow-sm transition-all duration-500 transform opacity-100 translate-y-0">
+                    <i class="fa-solid fa-triangle-exclamation mr-1"></i> {{ session('error') }}
+                </div>
+            @endif
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-blue-500 flex justify-between items-center">
                 <div>
@@ -91,7 +98,6 @@
             </div>
         </div>
 
-        <!-- FILTER & PENCARIAN -->
         <form action="{{ route('staff.agenda.index') }}" method="GET" class="flex flex-col md:flex-row gap-4 mb-8">
             <div class="relative flex-1">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
@@ -115,13 +121,11 @@
             </div>
         </form>
 
-        <!-- DAFTAR AGENDA -->
         <div class="space-y-4">
             @forelse($agendas as $item)
                 <div
                     class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition flex flex-col md:flex-row gap-6 relative overflow-hidden">
 
-                    <!-- Garis Warna Samping (Aksen Desain) -->
                     <div
                         class="absolute left-0 top-0 bottom-0 w-1.5 {{ $item->status == 'Akan Datang' ? 'bg-blue-500' : 'bg-green-500' }}">
                     </div>
@@ -160,7 +164,6 @@
                         <p class="text-gray-600 text-sm line-clamp-2 mb-2">{{ $item->deskripsi }}</p>
                     </div>
 
-                    <!-- TOMBOL AKSI (LIHAT, EDIT, HAPUS) -->
                     <div class="flex flex-row md:flex-col gap-2 shrink-0 justify-center">
                         <a href="{{ route('staff.agenda.show', $item->id) }}"
                             class="flex-1 md:w-28 bg-gray-100 text-gray-700 px-4 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-gray-200 transition">
@@ -191,4 +194,27 @@
             @endforelse
         </div>
     </div>
+
+    {{-- Script untuk auto-hide notifikasi --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mengambil semua elemen dengan class 'alert-message'
+            const alerts = document.querySelectorAll('.alert-message');
+
+            alerts.forEach(function(alert) {
+                // Menunggu 5 detik (5000 ms)
+                setTimeout(() => {
+                    // Menambahkan efek fade out (menghilang secara halus) ke atas
+                    alert.classList.remove('opacity-100', 'translate-y-0');
+                    alert.classList.add('opacity-0', '-translate-y-4');
+
+                    // Menunggu animasi selesai (500ms sesuai dengan duration-500) lalu menghapus elemen dari HTML
+                    setTimeout(() => {
+                        alert.style.display = 'none';
+                        alert.remove();
+                    }, 500);
+                }, 5000);
+            });
+        });
+    </script>
 @endsection

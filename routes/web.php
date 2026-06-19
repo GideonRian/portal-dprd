@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth; // <-- TAMBAHAN IMPORT FACADE AUTH
+use Illuminate\Support\Facades\Auth;
 
 // ==========================================
 // IMPORT MODELS
@@ -45,7 +45,7 @@ use App\Http\Controllers\Sekretaris\ReportController;
 |--------------------------------------------------------------------------
 */
 
-// TAMBAHAN: Bungkus area publik dengan middleware pelacak lalu lintas
+// Bungkus area publik dengan middleware pelacak lalu lintas
 Route::middleware([\App\Http\Middleware\TrackPublicTraffic::class])->group(function () {
 
     // --- Beranda ---
@@ -103,7 +103,6 @@ Route::middleware([\App\Http\Middleware\TrackPublicTraffic::class])->group(funct
 
     // --- Pusat Dokumen ---
     Route::get('/pusat-dokumen', function () {
-        // Hanya mengambil dokumen yang sudah disetujui Sekretaris
         $dokumens = Dokumen::where('status_persetujuan', 'Approved')->latest()->get();
         return view('Non-Users.pusat-dokumen', compact('dokumens'));
     })->name('pusat.dokumen');
@@ -156,7 +155,7 @@ Route::middleware([\App\Http\Middleware\TrackPublicTraffic::class])->group(funct
     Route::get('/layanan-aspirasi/lacak/cari', [AspirasiController::class, 'cariAspirasi'])->name('aspirasi.lacak.cari');
     Route::post('/layanan-aspirasi/lacak/{id}/rating', [\App\Http\Controllers\Frontend\AspirasiController::class, 'submitRating'])->name('aspirasi.lacak.rating');
 
-}); // Akhir dari middleware TrackPublicTraffic
+});
 
 // --- Rute Penunjuk Jalan Default Laravel ---
 Route::get('/login', function () {
@@ -193,7 +192,6 @@ Route::prefix('staff')->name('staff.')->group(function () {
         Route::put('/ganti-password', [AuthController::class, 'updatePassword'])->name('password.update');
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-        // Semua rute resource berita, dokumen, agenda, dll ada di sini...
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::resource('/anggota', AnggotaController::class)->names('anggota');
         Route::resource('/dokumen', DokumenController::class)->names('dokumen');
@@ -216,18 +214,16 @@ Route::prefix('staff')->name('staff.')->group(function () {
 */
 Route::prefix('sekretaris')->name('sekretaris.')->group(function () {
     
-    // 1. GERBANG UTAMA (Sudah Diperbarui untuk Kunci Master SuperAdmin)
+    // 1. GERBANG UTAMA
     Route::get('/', function () {
         if (Auth::check()) {
             $userRole = strtolower(Auth::user()->role ?? '');
             $userName = strtolower(Auth::user()->username ?? '');
 
-            // JALUR VIP: Jika yang masuk adalah Sekretaris ATAU SuperAdmin
             if ($userRole === 'sekretaris' || $userRole === 'superadmin' || $userName === 'superadmin') {
                 return redirect()->route('sekretaris.dashboard');
             }
             
-            // Jika Staff biasa yang mencoba masuk, kembalikan ke tempatnya
             return redirect()->route('staff.dashboard');
         }
         return redirect()->route('sekretaris.login');
@@ -260,6 +256,7 @@ Route::prefix('sekretaris')->name('sekretaris.')->group(function () {
     });
 });
 
+
 /*
 |--------------------------------------------------------------------------
 | BACKEND / SuperAdmin (Area Super Admin)
@@ -268,15 +265,31 @@ Route::prefix('sekretaris')->name('sekretaris.')->group(function () {
 Route::prefix('superadmin')->name('superadmin.')->group(function () {
     
     // ==========================================
-    // 1. RUTE BEBAS (Tidak perlu login)
+    // 1. GERBANG UTAMA & GUEST (Tidak perlu login)
     // ==========================================
-    Route::get('/login', [\App\Http\Controllers\SuperAdmin\AuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [\App\Http\Controllers\SuperAdmin\AuthController::class, 'login'])->name('login.submit');
+    Route::get('/', function () {
+        if (Auth::check()) {
+            $userRole = strtolower(Auth::user()->role ?? '');
+            $userName = strtolower(Auth::user()->username ?? '');
+
+            if ($userRole === 'superadmin' || $userName === 'superadmin') {
+                return redirect()->route('superadmin.dashboard');
+            }
+            return redirect()->route('staff.dashboard');
+        }
+        return redirect()->route('superadmin.login');
+    });
+
+    Route::middleware('guest')->group(function () {
+        Route::get('/login', [\App\Http\Controllers\SuperAdmin\AuthController::class, 'showLoginForm'])->name('login');
+        Route::post('/login', [\App\Http\Controllers\SuperAdmin\AuthController::class, 'login'])->name('login.submit');
+    });
 
     // ==========================================
-    // 2. RUTE TERLINDUNGI (Wajib Login)
+    // 2. RUTE TERLINDUNGI (Wajib Login & Wajib SuperAdmin)
     // ==========================================
-    Route::middleware(['auth'])->group(function () {
+    // PERBAIKAN: Middleware 'role:superadmin' ditambahkan di sini!
+    Route::middleware(['auth', 'role:superadmin'])->group(function () {
         
         // Verifikasi 2FA Challenge & Proses Logout
         Route::get('/2fa-challenge', [\App\Http\Controllers\SuperAdmin\AuthController::class, 'show2faForm'])->name('2fa.challenge');
