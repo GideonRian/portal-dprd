@@ -28,12 +28,25 @@ class ActivityLogController extends Controller
             $query->where('status', strtolower($request->status));
         }
 
-        // Fitur Filter Role
+        // ========================================================
+        // Fitur Filter Role (Diperbarui agar bisa membaca System Error)
+        // ========================================================
         if ($request->filled('role') && $request->role !== 'Semua Role') {
-            $query->whereHas('user', function($q) use ($request) {
-                $q->where('role', strtolower($request->role)); // Sesuaikan dengan nama kolom role di tabel users-mu
+            $roleName = $request->role; // Ambil teks asli dari dropdown, misal: 'Staff' atau 'Sekretaris'
+
+            $query->where(function($q) use ($roleName) {
+                // 1. Cari berdasarkan Role asli User yang login
+                $q->whereHas('user', function($userQuery) use ($roleName) {
+                    $userQuery->where('role', strtolower($roleName)); 
+                })
+                // 2. ATAU cari kata peran tersebut di dalam deskripsi khusus untuk log 'System' (gagal login)
+                ->orWhere(function($subQ) use ($roleName) {
+                    $subQ->whereNull('user_id')
+                         ->where('description', 'LIKE', '%' . $roleName . '%');
+                });
             });
         }
+        // ========================================================
 
         $logs = $query->paginate(15)->withQueryString();
 
