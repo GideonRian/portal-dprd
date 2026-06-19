@@ -57,7 +57,6 @@
                         <i class="fa-regular fa-newspaper"></i> Berita
                     </a>
 
-                    {{-- PERUBAHAN DI SINI: Link Aspirasi sudah terhubung dan bisa menyala saat aktif --}}
                     <a href="{{ route('staff.aspirasi.index') }}"
                         class="{{ request()->routeIs('staff.aspirasi.*') ? 'bg-white text-[#1e1b4b] font-bold shadow-sm' : 'text-gray-300 hover:bg-white/10 font-medium' }} px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition">
                         <i class="fa-regular fa-message"></i> Aspirasi
@@ -80,29 +79,42 @@
                             class="flex items-center gap-2 cursor-pointer hover:bg-white/10 px-3 py-1.5 rounded-lg transition border border-white/20 focus:outline-none focus:bg-white/10">
                             <div
                                 class="w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center text-xs font-bold">
-                                {{ strtoupper(substr(Auth::user()->nama ?? 'A', 0, 1)) }}
+                                {{ strtoupper(substr(Auth::user()->nama ?? Auth::user()->username ?? 'A', 0, 1)) }}
                             </div>
                             <span
-                                class="text-sm font-medium hidden sm:inline">{{ Auth::user()->nama ?? 'Admin' }}</span>
+                                class="text-sm font-medium hidden sm:inline">{{ Auth::user()->nama ?? Auth::user()->username ?? 'Admin' }}</span>
                             <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200"
                                 id="profileIcon"></i>
                         </button>
 
                         <div id="profileDropdown"
-                            class="hidden absolute right-0 mt-3 w-60 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 origin-top-right transition-all duration-200 opacity-0 scale-95">
+                            class="hidden absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 origin-top-right transition-all duration-200 opacity-0 scale-95">
 
                             <div class="px-5 py-4 bg-gray-50/50 border-b border-gray-100">
-                                <p class="text-sm font-black text-gray-900 leading-tight">
-                                    {{ Auth::user()->nama ?? 'Administrator' }}</p>
-                                <p class="text-[11px] text-gray-500 mt-0.5 font-medium uppercase tracking-wider">
+                                <p class="text-sm font-black text-gray-900 leading-tight truncate">
+                                    {{ Auth::user()->nama ?? Auth::user()->username ?? 'Administrator' }}</p>
+                                <p class="text-[11px] text-gray-500 mt-0.5 font-medium uppercase tracking-wider truncate">
                                     {{ Auth::user()->role ?? 'Staf Sekretariat' }}</p>
                             </div>
 
                             <div class="py-2">
+                                @if(strtolower(Auth::user()->username) === 'superadmin' || strtolower(Auth::user()->role ?? '') === 'superadmin')
+                                    <a href="{{ url('/superadmin/dashboard') }}" class="flex items-center gap-3 px-5 py-2.5 text-sm font-bold text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800 transition group">
+                                        <i class="fa-solid fa-arrow-left w-4 text-center group-hover:-translate-x-1 transition-transform"></i>
+                                        Kembali ke SuperAdmin
+                                    </a>
+                                    <div class="border-t border-gray-100 my-1"></div>
+                                @elseif(strtolower(Auth::user()->role ?? '') === 'sekretaris' || strtolower(Auth::user()->username) === 'sekretariat')
+                                    <a href="{{ url('/sekretaris/dashboard') }}" class="flex items-center gap-3 px-5 py-2.5 text-sm font-bold text-green-700 hover:bg-green-50 hover:text-green-800 transition group">
+                                        <i class="fa-solid fa-arrow-left w-4 text-center group-hover:-translate-x-1 transition-transform"></i>
+                                        Kembali ke Sekretariat
+                                    </a>
+                                    <div class="border-t border-gray-100 my-1"></div>
+                                @endif
+
                                 <a href="{{ route('staff.password.edit') }}"
                                     class="flex items-center gap-3 px-5 py-2.5 text-sm font-bold text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition group">
-                                    <i
-                                        class="fa-solid fa-key w-4 text-center text-gray-400 group-hover:text-blue-600"></i>
+                                    <i class="fa-solid fa-key w-4 text-center text-gray-400 group-hover:text-blue-600"></i>
                                     Ganti Password
                                 </a>
 

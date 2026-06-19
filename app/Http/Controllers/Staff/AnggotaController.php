@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Staff;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Anggota;
-use App\Models\ActivityLog; // <-- TAMBAHAN: Import Model ActivityLog
+use App\Models\ActivityLog; 
 use Illuminate\Support\Facades\Storage;
 
 class AnggotaController extends Controller
@@ -50,16 +50,25 @@ class AnggotaController extends Controller
             'foto'                => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        if ($request->hasFile('foto')) {
-            $validated['foto'] = $request->file('foto')->store('anggota_fotos', 'public');
+        try {
+            if ($request->hasFile('foto')) {
+                $validated['foto'] = $request->file('foto')->store('anggota_fotos', 'public');
+            }
+
+            Anggota::create($validated);
+
+            // CATAT LOG SUKSES
+            ActivityLog::record('Anggota', 'CREATE_ANGGOTA', "Staf menambahkan profil anggota dewan: {$validated['nama']}", 'success');
+
+            return redirect()->route('staff.anggota.index')->with('success', 'Data Anggota berhasil ditambahkan!');
+
+        } catch (\Exception $e) {
+            
+            // CATAT LOG GAGAL
+            ActivityLog::record('Anggota', 'FAILED_CREATE_ANGGOTA', "Gagal menambahkan data anggota. Error: " . $e->getMessage(), 'error');
+            
+            return back()->withInput()->with('error', 'Terjadi kesalahan sistem saat menyimpan data anggota!');
         }
-
-        Anggota::create($validated);
-
-        // <-- TAMBAHAN: Catat Log Tambah Data
-        ActivityLog::record('Anggota', 'Create', "Menambahkan profil anggota dewan: {$validated['nama']}");
-
-        return redirect()->route('staff.anggota.index')->with('success', 'Data Anggota berhasil ditambahkan!');
     }
 
     // 4. Tampilkan Form Edit
@@ -92,35 +101,53 @@ class AnggotaController extends Controller
             'foto'                => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        if ($request->hasFile('foto')) {
-            if ($anggota->foto && Storage::disk('public')->exists($anggota->foto)) {
-                Storage::disk('public')->delete($anggota->foto);
+        try {
+            if ($request->hasFile('foto')) {
+                if ($anggota->foto && Storage::disk('public')->exists($anggota->foto)) {
+                    Storage::disk('public')->delete($anggota->foto);
+                }
+                $validated['foto'] = $request->file('foto')->store('anggota_fotos', 'public');
             }
-            $validated['foto'] = $request->file('foto')->store('anggota_fotos', 'public');
+
+            $anggota->update($validated);
+
+            // CATAT LOG SUKSES
+            ActivityLog::record('Anggota', 'UPDATE_ANGGOTA', "Staf memperbarui profil anggota dewan: {$validated['nama']}", 'success');
+
+            return redirect()->route('staff.anggota.index')->with('success', 'Data Anggota berhasil diperbarui!');
+
+        } catch (\Exception $e) {
+            
+            // CATAT LOG GAGAL
+            ActivityLog::record('Anggota', 'FAILED_UPDATE_ANGGOTA', "Gagal memperbarui data anggota (ID: {$id}). Error: " . $e->getMessage(), 'error');
+            
+            return back()->withInput()->with('error', 'Terjadi kesalahan sistem saat memperbarui data anggota!');
         }
-
-        $anggota->update($validated);
-
-        // <-- TAMBAHAN: Catat Log Update Data
-        ActivityLog::record('Anggota', 'Update', "Memperbarui profil anggota dewan: {$validated['nama']}");
-
-        return redirect()->route('staff.anggota.index')->with('success', 'Data Anggota berhasil diperbarui!');
     }
 
     // 6. Hapus Data
     public function destroy($id)
     {
-        $anggota = Anggota::findOrFail($id);
-        $namaAnggota = $anggota->nama; // Simpan nama sebelum dihapus untuk log
+        try {
+            $anggota = Anggota::findOrFail($id);
+            $namaAnggota = $anggota->nama; // Simpan nama sebelum dihapus untuk log
 
-        if ($anggota->foto) {
-            Storage::disk('public')->delete($anggota->foto);
+            if ($anggota->foto) {
+                Storage::disk('public')->delete($anggota->foto);
+            }
+            $anggota->delete();
+            
+            // CATAT LOG WARNING (Tindakan Destruktif)
+            ActivityLog::record('Anggota', 'DELETE_ANGGOTA', "Staff menghapus data anggota dewan: {$namaAnggota}", 'warning');
+
+            return redirect()->route('staff.anggota.index')->with('success', 'Data anggota berhasil dihapus!');
+
+        } catch (\Exception $e) {
+            
+            // CATAT LOG GAGAL
+            ActivityLog::record('Anggota', 'FAILED_DELETE_ANGGOTA', "Gagal menghapus data anggota (ID: {$id}). Error: " . $e->getMessage(), 'error');
+            
+            return back()->with('error', 'Terjadi kesalahan sistem saat menghapus data anggota!');
         }
-        $anggota->delete();
-        
-        // <-- TAMBAHAN: Catat Log Hapus Data
-        ActivityLog::record('Anggota', 'Delete', "Menghapus data anggota dewan: {$namaAnggota}");
-
-        return redirect()->route('staff.anggota.index')->with('success', 'Data anggota berhasil dihapus!');
     }
 }

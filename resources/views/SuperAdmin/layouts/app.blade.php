@@ -42,8 +42,8 @@
                         <i class="fa-solid fa-users"></i> Users
                     </a>
 
-                    <a href="#" 
-                    class="text-red-100 hover:bg-red-700 font-medium px-3 py-2 rounded-md text-sm flex items-center gap-2 transition border border-transparent">
+                    <a href="{{ route('superadmin.2fa.index') }}"
+                    class="{{ request()->routeIs('superadmin.2fa.*') ? 'bg-red-900 text-white font-bold border border-red-700 shadow-sm' : 'text-red-100 hover:bg-red-700 font-medium border border-transparent' }} px-3 py-2 rounded-md text-sm flex items-center gap-2 transition">
                         <i class="fa-solid fa-lock"></i> 2FA
                     </a>
                     
@@ -55,25 +55,37 @@
 
                         <div id="moreDropdownMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50 origin-top-right transition-all duration-200 opacity-0 scale-95">
                             <div class="py-1">
-                                <a href="#" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 transition">
-                                    <i class="fa-solid fa-gear w-5 text-center text-gray-400"></i> Pengaturan Sistem
+                                <a href="{{ route('superadmin.password.edit') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-red-800 transition-colors">
+                                    <i class="fa-solid fa-key text-gray-400 w-5 text-center"></i>
+                                    Change Password
                                 </a>
-                                <a href="#" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 transition">
-                                    <i class="fa-solid fa-database w-5 text-center text-gray-400"></i> Backup Data
+
+                                <a href="{{ route('superadmin.activity-logs.index') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-red-800 transition-colors">
+                                    <i class="fa-solid fa-chart-line text-gray-400 w-5 text-center"></i>
+                                    Activity Logs
                                 </a>
-                                <a href="#" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 transition">
-                                    <i class="fa-solid fa-shield-virus w-5 text-center text-gray-400"></i> Audit Log
+
+                                <a href="{{ url('/superadmin/digital-footprint') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-red-800 transition-colors">
+                                    <i class="fa-solid fa-magnifying-glass text-gray-400 w-5 text-center"></i>
+                                    Digital Footprint
+                                </a>
+
+                                <a href="{{ url('/superadmin/double-switch') }}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-red-800 transition-colors">
+                                    <i class="fa-solid fa-right-left text-gray-400 w-5 text-center"></i> Double Switch
                                 </a>
                             </div>
                         </div>
                     </div>
 
-                    <form action="{{ route('staff.logout') }}" method="POST" class="inline">
+                    <!-- Form Logout Tersembunyi -->
+                    <form id="logout-form" action="{{ route('superadmin.logout') }}" method="POST" style="display: none;">
                         @csrf
-                        <button type="submit" class="hover:bg-red-700 text-red-100 px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 border border-transparent hover:border-red-500 transition">
-                            <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
-                        </button>
                     </form>
+
+                    <!-- Tombol Logout yang memicu form di atas -->
+                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="text-white hover:text-red-200 font-bold px-3 py-2 rounded-md text-sm transition flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+                    </a>
 
                 </div>
             </div>

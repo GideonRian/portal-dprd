@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Aspirasi;
 use App\Models\AspirasiHistory;
-use App\Models\ActivityLog; // <-- TAMBAHAN: Import Model ActivityLog
+use App\Models\ActivityLog; 
 use Illuminate\Support\Facades\Auth;
 
 class AspirasiController extends Controller
@@ -62,41 +62,52 @@ class AspirasiController extends Controller
             'catatan'=> 'nullable|string'
         ]);
 
-        $aspirasi = Aspirasi::findOrFail($id);
-        
-        // Ambil rating & ulasan saat ini
-        $rating = $aspirasi->rating;
-        $ulasan = $aspirasi->ulasan;
+        try {
+            $aspirasi = Aspirasi::findOrFail($id);
+            
+            // Ambil rating & ulasan saat ini
+            $rating = $aspirasi->rating;
+            $ulasan = $aspirasi->ulasan;
 
-        // LOGIKA BARU: Jika status dibatalkan dari Selesai (misal dikembalikan ke Diproses), 
-        // maka reset rating dari masyarakat agar mereka bisa menilai ulang nanti.
-        if ($aspirasi->status == 'Selesai' && $request->status != 'Selesai') {
-            $rating = null;
-            $ulasan = null;
+            // LOGIKA BARU: Jika status dibatalkan dari Selesai (misal dikembalikan ke Diproses), 
+            // maka reset rating dari masyarakat agar mereka bisa menilai ulang nanti.
+            if ($aspirasi->status == 'Selesai' && $request->status != 'Selesai') {
+                $rating = null;
+                $ulasan = null;
+            }
+
+            // Update data utama di tabel aspirasis
+            $aspirasi->update([
+                'status'     => $request->status,
+                'pic'        => $request->pic,
+                'keterangan' => $request->catatan,
+                'rating'     => $rating,
+                'ulasan'     => $ulasan
+            ]);
+
+            // Catat ke Timeline History
+            AspirasiHistory::create([
+                'aspirasi_id' => $aspirasi->id,
+                'status'      => $request->status,
+                'catatan'     => $request->catatan,
+                // Detektor otomatis: Menggunakan 'name', 'nama', atau 'username' sesuai struktur database Anda
+                'user_name'   => Auth::check() ? (Auth::user()->name ?? Auth::user()->nama ?? Auth::user()->username) : 'Admin DPRD'
+            ]);
+
+            $nomorTiket = $aspirasi->tiket_id ?? $aspirasi->id;
+            
+            // CATAT LOG SUKSES
+            // Menjadikan aksi lebih spesifik yaitu 'UPDATE_STATUS_ASPIRASI' dan diberi label 'success'
+            ActivityLog::record('Aspirasi', 'UPDATE_STATUS_ASPIRASI', "Staf memperbarui status aspirasi (Tiket: {$nomorTiket}) menjadi: {$request->status}", 'success');
+
+            return redirect()->route('staff.aspirasi.index')->with('success', 'Status aspirasi berhasil diperbarui dan dicatat ke riwayat!');
+
+        } catch (\Exception $e) {
+            
+            // CATAT LOG GAGAL
+            ActivityLog::record('Aspirasi', 'FAILED_UPDATE_ASPIRASI', "Gagal memperbarui status aspirasi (ID: {$id}). Error: " . $e->getMessage(), 'error');
+            
+            return back()->withInput()->with('error', 'Terjadi kesalahan sistem saat memperbarui status aspirasi!');
         }
-
-        // Update data utama di tabel aspirasis
-        $aspirasi->update([
-            'status'     => $request->status,
-            'pic'        => $request->pic,
-            'keterangan' => $request->catatan,
-            'rating'     => $rating,
-            'ulasan'     => $ulasan
-        ]);
-
-        // Catat ke Timeline History
-        AspirasiHistory::create([
-            'aspirasi_id' => $aspirasi->id,
-            'status'      => $request->status,
-            'catatan'     => $request->catatan,
-            // Detektor otomatis: Menggunakan 'name' atau 'nama' sesuai struktur database Anda
-            'user_name'   => Auth::check() ? (Auth::user()->name ?? Auth::user()->nama) : 'Admin DPRD'
-        ]);
-
-        // <-- TAMBAHAN: Catat Log Aktivitas Staf untuk Dipantau Sekretaris
-        $nomorTiket = $aspirasi->tiket_id ?? $aspirasi->id;
-        ActivityLog::record('Aspirasi', 'Update', "Memperbarui status aspirasi (Tiket: {$nomorTiket}) menjadi: {$request->status}");
-
-        return redirect()->route('staff.aspirasi.index')->with('success', 'Status aspirasi berhasil diperbarui dan dicatat ke riwayat!');
     }
 }

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Staff;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Agenda;
-use App\Models\ActivityLog; // <-- TAMBAHAN: Import Model ActivityLog
+use App\Models\ActivityLog; 
 use Illuminate\Support\Facades\Storage;
 
 class AgendaController extends Controller
@@ -51,16 +51,25 @@ class AgendaController extends Controller
             'gambar' => 'nullable|image|max:2048',
         ]);
 
-        if ($request->hasFile('gambar')) {
-            $data['gambar'] = $request->file('gambar')->store('agenda_files', 'public');
+        try {
+            if ($request->hasFile('gambar')) {
+                $data['gambar'] = $request->file('gambar')->store('agenda_files', 'public');
+            }
+
+            Agenda::create($data);
+
+            // CATAT LOG SUKSES
+            ActivityLog::record('Agenda', 'CREATE_AGENDA', "Staf menambahkan agenda baru: {$data['judul']}", 'success');
+
+            return redirect()->route('staff.agenda.index')->with('success', 'Agenda berhasil ditambahkan!');
+
+        } catch (\Exception $e) {
+            
+            // CATAT LOG GAGAL
+            ActivityLog::record('Agenda', 'FAILED_CREATE_AGENDA', "Gagal menambah agenda baru. Error: " . $e->getMessage(), 'error');
+            
+            return back()->withInput()->with('error', 'Terjadi kesalahan sistem saat menyimpan agenda!');
         }
-
-        Agenda::create($data);
-
-        // <-- TAMBAHAN: Catat Log Tambah Data
-        ActivityLog::record('Agenda', 'Create', "Menambahkan agenda baru: {$data['judul']}");
-
-        return redirect()->route('staff.agenda.index')->with('success', 'Agenda berhasil ditambahkan!');
     }
 
     public function edit(Agenda $agenda) { return view('Staff.Agenda.edit', compact('agenda')); }
@@ -79,17 +88,26 @@ class AgendaController extends Controller
             'gambar' => 'nullable|image|max:2048',
         ]);
 
-        if ($request->hasFile('gambar')) {
-            if ($agenda->gambar) Storage::disk('public')->delete($agenda->gambar);
-            $data['gambar'] = $request->file('gambar')->store('agenda_files', 'public');
+        try {
+            if ($request->hasFile('gambar')) {
+                if ($agenda->gambar) Storage::disk('public')->delete($agenda->gambar);
+                $data['gambar'] = $request->file('gambar')->store('agenda_files', 'public');
+            }
+
+            $agenda->update($data);
+
+            // CATAT LOG SUKSES
+            ActivityLog::record('Agenda', 'UPDATE_AGENDA', "Staf memperbarui data agenda: {$data['judul']}", 'success');
+
+            return redirect()->route('staff.agenda.index')->with('success', 'Agenda berhasil diperbarui!');
+
+        } catch (\Exception $e) {
+            
+            // CATAT LOG GAGAL
+            ActivityLog::record('Agenda', 'FAILED_UPDATE_AGENDA', "Gagal memperbarui agenda (ID: {$agenda->id}). Error: " . $e->getMessage(), 'error');
+            
+            return back()->withInput()->with('error', 'Terjadi kesalahan sistem saat memperbarui agenda!');
         }
-
-        $agenda->update($data);
-
-        // <-- TAMBAHAN: Catat Log Update Data
-        ActivityLog::record('Agenda', 'Update', "Memperbarui data agenda: {$data['judul']}");
-
-        return redirect()->route('staff.agenda.index')->with('success', 'Agenda berhasil diperbarui!');
     }
     
     public function show(Agenda $agenda)
@@ -99,14 +117,23 @@ class AgendaController extends Controller
 
     public function destroy(Agenda $agenda)
     {
-        $judulAgenda = $agenda->judul; // Simpan judul sebelum dihapus untuk keperluan log
+        try {
+            $judulAgenda = $agenda->judul; 
 
-        if ($agenda->gambar) Storage::disk('public')->delete($agenda->gambar);
-        $agenda->delete();
+            if ($agenda->gambar) Storage::disk('public')->delete($agenda->gambar);
+            $agenda->delete();
 
-        // <-- TAMBAHAN: Catat Log Hapus Data
-        ActivityLog::record('Agenda', 'Delete', "Menghapus agenda: {$judulAgenda}");
+            // CATAT LOG WARNING (Tindakan Destruktif)
+            ActivityLog::record('Agenda', 'DELETE_AGENDA', "Staf menghapus agenda: {$judulAgenda}", 'warning');
 
-        return redirect()->route('staff.agenda.index')->with('success', 'Agenda berhasil dihapus!');
+            return redirect()->route('staff.agenda.index')->with('success', 'Agenda berhasil dihapus!');
+
+        } catch (\Exception $e) {
+            
+            // CATAT LOG GAGAL
+            ActivityLog::record('Agenda', 'FAILED_DELETE_AGENDA', "Gagal menghapus agenda (ID: {$agenda->id}). Error: " . $e->getMessage(), 'error');
+            
+            return back()->with('error', 'Terjadi kesalahan sistem saat menghapus agenda!');
+        }
     }
 }

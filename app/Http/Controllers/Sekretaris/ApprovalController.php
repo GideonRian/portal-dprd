@@ -9,6 +9,7 @@ use App\Models\ActivityLog;
 
 class ApprovalController extends Controller
 {
+    // Menampilkan Halaman Approval dan Statistik
     public function index()
     {
         // Hitung statistik asli berdasarkan data riil dari tabel dokumens
@@ -27,34 +28,56 @@ class ApprovalController extends Controller
     // Fungsi Aksi Menyetujui Konten Dokumen
     public function approve(Request $request, $id)
     {
-        $dokumen = Dokumen::findOrFail($id);
-        
-        // Simpan status dan catatannya
-        $dokumen->update([
-            'status_persetujuan' => Dokumen::STATUS_APPROVED,
-            'catatan_persetujuan' => $request->catatan // Menyimpan catatan dari modal
-        ]);
+        try {
+            $dokumen = Dokumen::findOrFail($id);
+            
+            // Simpan status dan catatannya
+            $dokumen->update([
+                'status_persetujuan' => Dokumen::STATUS_APPROVED,
+                'catatan_persetujuan' => $request->catatan // Menyimpan catatan dari modal
+            ]);
 
-        $catatanLog = $request->filled('catatan') ? " (Catatan: {$request->catatan})" : "";
-        ActivityLog::record('Dokumen', 'Update', "Menyetujui publikasi dokumen: {$dokumen->judul}{$catatanLog}");
+            $catatanLog = $request->filled('catatan') ? " (Catatan: {$request->catatan})" : "";
+            
+            // CATAT AKTIVITAS SUKSES
+            ActivityLog::record('Dokumen', 'APPROVE_DOKUMEN', "Menyetujui publikasi dokumen: {$dokumen->judul}{$catatanLog}", 'success');
 
-        return redirect()->route('sekretaris.approval')->with('success', 'Dokumen resmi disetujui dan tayang di publik!');
+            return redirect()->route('sekretaris.approval')->with('success', 'Dokumen resmi disetujui dan tayang di publik!');
+
+        } catch (\Exception $e) {
+            
+            // CATAT AKTIVITAS GAGAL (Sistem/Database Error)
+            ActivityLog::record('Dokumen', 'FAILED_APPROVE_DOKUMEN', "Gagal menyetujui dokumen (ID: {$id}). Error: " . $e->getMessage(), 'error');
+
+            return back()->with('error', 'Terjadi kesalahan sistem saat menyetujui dokumen!');
+        }
     }
 
     // Fungsi Aksi Menolak Konten Dokumen
     public function reject(Request $request, $id)
     {
-        $dokumen = Dokumen::findOrFail($id);
-        
-        // Simpan status dan catatannya
-        $dokumen->update([
-            'status_persetujuan' => Dokumen::STATUS_REJECTED,
-            'catatan_persetujuan' => $request->catatan // Menyimpan catatan dari modal
-        ]);
+        try {
+            $dokumen = Dokumen::findOrFail($id);
+            
+            // Simpan status dan catatannya
+            $dokumen->update([
+                'status_persetujuan' => Dokumen::STATUS_REJECTED,
+                'catatan_persetujuan' => $request->catatan // Menyimpan catatan dari modal
+            ]);
 
-        $catatanLog = $request->filled('catatan') ? " (Alasan Ditolak: {$request->catatan})" : "";
-        ActivityLog::record('Dokumen', 'Update', "Menolak/Revisi dokumen: {$dokumen->judul}{$catatanLog}");
+            $catatanLog = $request->filled('catatan') ? " (Alasan Ditolak: {$request->catatan})" : "";
+            
+            // CATAT AKTIVITAS WARNING (Karena ini penolakan/revisi untuk staf)
+            ActivityLog::record('Dokumen', 'REJECT_DOKUMEN', "Menolak/Revisi dokumen: {$dokumen->judul}{$catatanLog}", 'warning');
 
-        return redirect()->route('sekretaris.approval')->with('error', 'Dokumen ditolak dan dikembalikan ke staf.');
+            return redirect()->route('sekretaris.approval')->with('error', 'Dokumen ditolak dan dikembalikan ke staf.');
+
+        } catch (\Exception $e) {
+            
+            // CATAT AKTIVITAS GAGAL (Sistem/Database Error)
+            ActivityLog::record('Dokumen', 'FAILED_REJECT_DOKUMEN', "Gagal menolak dokumen (ID: {$id}). Error: " . $e->getMessage(), 'error');
+
+            return back()->with('error', 'Terjadi kesalahan sistem saat menolak dokumen!');
+        }
     }
 }

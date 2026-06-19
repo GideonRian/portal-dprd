@@ -216,22 +216,30 @@ Route::prefix('staff')->name('staff.')->group(function () {
 */
 Route::prefix('sekretaris')->name('sekretaris.')->group(function () {
     
+    // 1. GERBANG UTAMA (Sudah Diperbarui untuk Kunci Master SuperAdmin)
     Route::get('/', function () {
         if (Auth::check()) {
-            return Auth::user()->role === 'sekretaris' 
-                ? redirect()->route('sekretaris.dashboard') 
-                : redirect()->route('staff.dashboard');
+            $userRole = strtolower(Auth::user()->role ?? '');
+            $userName = strtolower(Auth::user()->username ?? '');
+
+            // JALUR VIP: Jika yang masuk adalah Sekretaris ATAU SuperAdmin
+            if ($userRole === 'sekretaris' || $userRole === 'superadmin' || $userName === 'superadmin') {
+                return redirect()->route('sekretaris.dashboard');
+            }
+            
+            // Jika Staff biasa yang mencoba masuk, kembalikan ke tempatnya
+            return redirect()->route('staff.dashboard');
         }
         return redirect()->route('sekretaris.login');
     });
 
-    // 1. RUTE GUEST
+    // 2. RUTE GUEST
     Route::middleware('guest')->group(function () {
         Route::get('/login', [SekretarisAuthController::class, 'index'])->name('login');
         Route::post('/login', [SekretarisAuthController::class, 'authenticate'])->name('login.process');
     });
 
-    // 2. RUTE TERLINDUNGI
+    // 3. RUTE TERLINDUNGI
     Route::middleware(['auth', 'role:sekretaris'])->group(function () {
         
         Route::post('/logout', [SekretarisAuthController::class, 'logout'])->name('logout');
@@ -257,24 +265,52 @@ Route::prefix('sekretaris')->name('sekretaris.')->group(function () {
 | BACKEND / SuperAdmin (Area Super Admin)
 |--------------------------------------------------------------------------
 */
-
 Route::prefix('superadmin')->name('superadmin.')->group(function () {
     
-    // =========================================================================
-    // MIDDLEWARE DIMATIKAN SEMENTARA UNTUK TES TAMPILAN (UI)
-    // Hapus tanda komentar (//) nanti jika sistem login & role sudah siap
-    // =========================================================================
-    // Route::middleware(['auth', 'is_superadmin'])->group(function () {
+    // ==========================================
+    // 1. RUTE BEBAS (Tidak perlu login)
+    // ==========================================
+    Route::get('/login', [\App\Http\Controllers\SuperAdmin\AuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [\App\Http\Controllers\SuperAdmin\AuthController::class, 'login'])->name('login.submit');
+
+    // ==========================================
+    // 2. RUTE TERLINDUNGI (Wajib Login)
+    // ==========================================
+    Route::middleware(['auth'])->group(function () {
         
-        // Dashboard Super Admin
+        // Verifikasi 2FA Challenge & Proses Logout
+        Route::get('/2fa-challenge', [\App\Http\Controllers\SuperAdmin\AuthController::class, 'show2faForm'])->name('2fa.challenge');
+        Route::post('/2fa-challenge', [\App\Http\Controllers\SuperAdmin\AuthController::class, 'verify2fa'])->name('2fa.verify');
+        Route::post('/logout', [\App\Http\Controllers\SuperAdmin\AuthController::class, 'logout'])->name('logout');
+        
+        // Dashboard
         Route::get('/dashboard', [\App\Http\Controllers\SuperAdmin\DashboardController::class, 'index'])->name('dashboard');
 
-        // Manajemen Akun Staff / Admin (Contoh resource route)
-        Route::resource('/users', \App\Http\Controllers\SuperAdmin\UserController::class)->names('users');
-
-        // Pengaturan Sistem / Konfigurasi Web
+        // Pengaturan
         Route::get('/pengaturan', [\App\Http\Controllers\SuperAdmin\SettingController::class, 'index'])->name('pengaturan');
         Route::put('/pengaturan/update', [\App\Http\Controllers\SuperAdmin\SettingController::class, 'update'])->name('pengaturan.update');
-        
-    // });
+
+        // Manajemen 2FA
+        Route::get('/2fa', [\App\Http\Controllers\SuperAdmin\TwoFactorController::class, 'index'])->name('2fa.index');
+        Route::post('/2fa/generate-recovery', [\App\Http\Controllers\SuperAdmin\TwoFactorController::class, 'generateRecoveryCodes'])->name('2fa.generate_recovery');
+
+        // Activity Logs & Forensics
+        Route::get('/activity-logs', [\App\Http\Controllers\SuperAdmin\ActivityLogController::class, 'index'])->name('activity-logs.index');
+        Route::get('/digital-footprint', [\App\Http\Controllers\SuperAdmin\ForensicController::class, 'index'])->name('digital-footprint.index');
+        Route::get('/activity-logs/export', [\App\Http\Controllers\SuperAdmin\ActivityLogController::class, 'exportCsv'])->name('activity-logs.export');
+
+        // Manajemen Users
+        Route::patch('/users/{user}/toggle-status', [\App\Http\Controllers\SuperAdmin\UserController::class, 'toggleStatus'])->name('users.toggle-status');
+        Route::put('/users/{user}/reset-password', [\App\Http\Controllers\SuperAdmin\UserController::class, 'resetPassword'])->name('users.reset-password');
+        Route::resource('/users', \App\Http\Controllers\SuperAdmin\UserController::class)->names('users');
+
+        // Ganti Password SuperAdmin
+        Route::get('/ganti-password', [\App\Http\Controllers\SuperAdmin\AuthController::class, 'editPassword'])->name('password.edit');
+        Route::put('/ganti-password', [\App\Http\Controllers\SuperAdmin\AuthController::class, 'updatePassword'])->name('password.update');
+
+        // Fitur Double Switch (Impersonation)
+        Route::get('/double-switch', [\App\Http\Controllers\SuperAdmin\DoubleSwitchController::class, 'index']);
+        Route::post('/double-switch/login-as', [\App\Http\Controllers\SuperAdmin\DoubleSwitchController::class, 'loginAs'])->name('double-switch.login');
+
+    });
 });

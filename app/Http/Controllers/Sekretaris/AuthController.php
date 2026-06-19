@@ -11,57 +11,66 @@ use App\Models\ActivityLog;
 
 class AuthController extends Controller
 {
-    /**
-     * 1. Menampilkan halaman login Sekretaris
-     */
     public function index()
     {
         return view('Pimpinan-Sekretariat.login');
     }
 
-    /**
-     * 2. Memproses otentikasi login Sekretaris
-     */
     public function authenticate(Request $request)
     {
-        $credentials = $request->validate([
+        $request->validate([
             'username' => ['required'],
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials)) {
-            $user = Auth::user();
+        $loginType = filter_var($request->username, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
-            // Proteksi: Hanya role 'sekretaris' yang bisa masuk panel ini
-            if ($user->role !== 'sekretaris') {
+        $credentials = [
+            $loginType => $request->username,
+            'password' => $request->password
+        ];
+
+        if (Auth::attempt($credentials)) {
+            $user = User::find(Auth::id());
+            $user->last_login_at = now();
+            $user->save();
+
+            // 1. PROTEKSI AKUN NONAKTIF
+            if (!$user->is_active) {
+                ActivityLog::record('Autentikasi', 'BLOCKED_LOGIN', 'Login diblokir - akun Sekretaris dinonaktifkan (Username: ' . $request->username . ')', 'warning');
                 Auth::logout();
-                return back()->with('error', 'Akses ditolak. Panel ini khusus untuk Pimpinan Sekretariat.');
+                return back()->withErrors([
+                    'username' => 'Akun Anda telah dinonaktifkan oleh Super Admin.',
+                ])->onlyInput('username');
+            }
+
+            // 2. Proteksi Role Sekretaris
+            $roleUser = strtolower($user->role);
+            if (!in_array($roleUser, ['sekretaris', 'sekretariat', 'pimpinan'])) {
+                ActivityLog::record('Autentikasi', 'UNAUTHORIZED_LOGIN', 'Akses ditolak - mencoba masuk ke panel Sekretaris dengan role ' . $roleUser, 'warning');
+                Auth::logout();
+                return back()->with('error', 'Akses ditolak. Panel ini khusus untuk Pimpinan & Sekretariat.');
             }
 
             $request->session()->regenerate();
-
-            // Catat aktivitas Login
-            ActivityLog::record('Autentikasi', 'Login', 'Pimpinan / Sekretaris berhasil masuk ke sistem.');
+            ActivityLog::record('Autentikasi', 'LOGIN', 'Pimpinan / Sekretaris berhasil masuk ke sistem.');
 
             return redirect()->route('sekretaris.dashboard');
         }
+
+        // CATAT JIKA GAGAL LOGIN
+        ActivityLog::record('Autentikasi', 'FAILED_LOGIN', 'Login gagal - kredensial salah (Mencoba login sebagai Sekretaris: ' . $request->username . ')', 'error');
 
         return back()->withErrors([
             'username' => 'Username atau password yang Anda masukkan salah.',
         ])->onlyInput('username');
     }
 
-    /**
-     * 3. Menampilkan halaman ganti password Sekretaris
-     */
     public function editPassword()
     {
         return view('Pimpinan-Sekretariat.Password.edit');
     }
 
-    /**
-     * 4. Memproses perubahan password Sekretaris
-     */
     public function updatePassword(Request $request)
     {
         $request->validate([
@@ -69,28 +78,25 @@ class AuthController extends Controller
             'password' => 'required|min:8|confirmed',
         ]);
 
-        $userId = Auth::id();
-        $user = User::find($userId);
+        $user = User::find(Auth::id());
 
         if (!Hash::check($request->current_password, $user->password)) {
+            // CATAT JIKA GAGAL GANTI PASSWORD
+            ActivityLog::record('Autentikasi', 'FAILED_CHANGE_PASSWORD', 'Gagal mengganti password - password lama tidak cocok.', 'error');
             return back()->withErrors(['current_password' => 'Password lama tidak sesuai.']);
         }
 
         $user->password = Hash::make($request->password);
         $user->save(); 
 
-        ActivityLog::record('Autentikasi', 'Update', 'Pimpinan / Sekretaris mengubah password akunnya.');
+        ActivityLog::record('Autentikasi', 'UPDATE_PASSWORD', 'Pimpinan / Sekretaris mengubah password akunnya.');
 
         return redirect()->route('sekretaris.dashboard')->with('success', 'Password Anda berhasil diperbarui!');
     }
 
-    /**
-     * 5. Proses Logout Sekretaris
-     */
     public function logout(Request $request)
     {
-        // Catat aktivitas Logout SEBELUM sesi dihancurkan
-        ActivityLog::record('Autentikasi', 'Logout', 'Pimpinan / Sekretaris keluar dari sistem.');
+        ActivityLog::record('Autentikasi', 'LOGOUT', 'Pimpinan / Sekretaris keluar dari sistem.');
 
         Auth::logout();
         $request->session()->invalidate();

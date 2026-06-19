@@ -50,22 +50,32 @@ class DokumenController extends Controller
             'file_dokumen' => 'required|file|mimes:pdf,doc,docx,xls,xlsx|max:51200', 
         ]);
 
-        $file = $request->file('file_dokumen');
-        $data['file_path'] = $file->store('dokumen_resmi', 'public');
-        
-        $data['tipe_file'] = $data['tipe_file'] ?? strtoupper($file->getClientOriginalExtension());
-        $data['ukuran_file'] = $this->formatBytes($file->getSize());
-        $data['nama_file'] = $data['nama_file'] ?? $file->getClientOriginalName();
-        
-        // Menggunakan konstanta Model untuk status
-        $data['status_persetujuan'] = Dokumen::STATUS_PENDING;
+        try {
+            $file = $request->file('file_dokumen');
+            $data['file_path'] = $file->store('dokumen_resmi', 'public');
+            
+            $data['tipe_file'] = $data['tipe_file'] ?? strtoupper($file->getClientOriginalExtension());
+            $data['ukuran_file'] = $this->formatBytes($file->getSize());
+            $data['nama_file'] = $data['nama_file'] ?? $file->getClientOriginalName();
+            
+            // Menggunakan konstanta Model untuk status
+            $data['status_persetujuan'] = Dokumen::STATUS_PENDING;
 
-        unset($data['file_dokumen']); 
-        Dokumen::create($data);
+            unset($data['file_dokumen']); 
+            Dokumen::create($data);
 
-        ActivityLog::record('Dokumen', 'Create', "Mengunggah dokumen baru: {$request->judul} (Menunggu persetujuan Sekretaris)");
+            // CATAT LOG SUKSES
+            ActivityLog::record('Dokumen', 'CREATE_DOKUMEN', "Staf mengunggah dokumen baru: {$request->judul} (Menunggu persetujuan Sekretaris)", 'success');
 
-        return redirect()->route('staff.dokumen.index')->with('success', 'Dokumen berhasil diunggah dan sedang menunggu persetujuan Sekretaris!');
+            return redirect()->route('staff.dokumen.index')->with('success', 'Dokumen berhasil diunggah dan sedang menunggu persetujuan Sekretaris!');
+
+        } catch (\Exception $e) {
+            
+            // CATAT LOG GAGAL
+            ActivityLog::record('Dokumen', 'FAILED_CREATE_DOKUMEN', "Gagal mengunggah dokumen baru. Error: " . $e->getMessage(), 'error');
+            
+            return back()->withInput()->with('error', 'Terjadi kesalahan sistem saat mengunggah dokumen!');
+        }
     }
 
     public function edit($id)
@@ -77,6 +87,7 @@ class DokumenController extends Controller
     public function update(Request $request, $id)
     {
         $dokumen = Dokumen::findOrFail($id);
+        
         $data = $request->validate([
             'judul' => 'required|string|max:255',
             'kategori' => 'required|string',
@@ -87,39 +98,63 @@ class DokumenController extends Controller
             'file_dokumen' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx|max:51200',
         ]);
 
-        if ($request->hasFile('file_dokumen')) {
-            if ($dokumen->file_path) Storage::disk('public')->delete($dokumen->file_path);
+        try {
+            if ($request->hasFile('file_dokumen')) {
+                if ($dokumen->file_path && Storage::disk('public')->exists($dokumen->file_path)) {
+                    Storage::disk('public')->delete($dokumen->file_path);
+                }
+                
+                $file = $request->file('file_dokumen');
+                $data['file_path'] = $file->store('dokumen_resmi', 'public');
+                $data['tipe_file'] = $data['tipe_file'] ?? strtoupper($file->getClientOriginalExtension());
+                $data['ukuran_file'] = $this->formatBytes($file->getSize());
+                $data['nama_file'] = $data['nama_file'] ?? $file->getClientOriginalName();
+            }
+
+            // Kembalikan ke status Pending dan hapus catatan lama (reset)
+            $data['status_persetujuan'] = Dokumen::STATUS_PENDING;
+            $data['catatan_persetujuan'] = null;
+
+            unset($data['file_dokumen']);
+            $dokumen->update($data);
+
+            // CATAT LOG SUKSES
+            ActivityLog::record('Dokumen', 'UPDATE_DOKUMEN', "Staf memperbarui dokumen: {$request->judul} (Status di-reset ke menunggu persetujuan)", 'success');
+
+            return redirect()->route('staff.dokumen.index')->with('success', 'Dokumen berhasil diperbarui dan status kembali menunggu persetujuan.');
+
+        } catch (\Exception $e) {
             
-            $file = $request->file('file_dokumen');
-            $data['file_path'] = $file->store('dokumen_resmi', 'public');
-            $data['tipe_file'] = $data['tipe_file'] ?? strtoupper($file->getClientOriginalExtension());
-            $data['ukuran_file'] = $this->formatBytes($file->getSize());
-            $data['nama_file'] = $data['nama_file'] ?? $file->getClientOriginalName();
+            // CATAT LOG GAGAL
+            ActivityLog::record('Dokumen', 'FAILED_UPDATE_DOKUMEN', "Gagal memperbarui dokumen (ID: {$id}). Error: " . $e->getMessage(), 'error');
+            
+            return back()->withInput()->with('error', 'Terjadi kesalahan sistem saat memperbarui dokumen!');
         }
-
-        // Kembalikan ke status Pending dan hapus catatan lama (reset)
-        $data['status_persetujuan'] = Dokumen::STATUS_PENDING;
-        $data['catatan_persetujuan'] = null;
-
-        unset($data['file_dokumen']);
-        $dokumen->update($data);
-
-        ActivityLog::record('Dokumen', 'Update', "Memperbarui dokumen: {$request->judul} (Status di-reset ke menunggu persetujuan)");
-
-        return redirect()->route('staff.dokumen.index')->with('success', 'Dokumen berhasil diperbarui dan status kembali menunggu persetujuan.');
     }
 
     public function destroy($id)
     {
-        $dokumen = Dokumen::findOrFail($id);
-        $judulDokumen = $dokumen->judul;
+        try {
+            $dokumen = Dokumen::findOrFail($id);
+            $judulDokumen = $dokumen->judul;
 
-        if ($dokumen->file_path) Storage::disk('public')->delete($dokumen->file_path);
-        $dokumen->delete();
+            if ($dokumen->file_path && Storage::disk('public')->exists($dokumen->file_path)) {
+                Storage::disk('public')->delete($dokumen->file_path);
+            }
+            $dokumen->delete();
 
-        ActivityLog::record('Dokumen', 'Delete', "Menghapus dokumen: {$judulDokumen}");
+            // CATAT LOG WARNING (Tindakan destruktif / hapus file)
+            ActivityLog::record('Dokumen', 'DELETE_DOKUMEN', "Staf menghapus dokumen: {$judulDokumen}", 'warning');
 
-        return redirect()->route('staff.dokumen.index')->with('success', 'Dokumen berhasil dihapus!');
+            return redirect()->route('staff.dokumen.index')->with('success', 'Dokumen berhasil dihapus!');
+
+        } catch (\Exception $e) {
+            
+            // CATAT LOG GAGAL
+            ActivityLog::record('Dokumen', 'FAILED_DELETE_DOKUMEN', "Gagal menghapus dokumen (ID: {$id}). Error: " . $e->getMessage(), 'error');
+            
+            return back()->with('error', 'Terjadi kesalahan sistem saat menghapus dokumen!');
+        }
     }
 
     private function formatBytes($bytes, $precision = 1) { 

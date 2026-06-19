@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Staff;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Berita;
-use App\Models\ActivityLog; // <-- TAMBAHAN: Import Model ActivityLog
+use App\Models\ActivityLog; 
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
@@ -39,23 +39,33 @@ class BeritaController extends Controller
             'gambar.*' => 'image|max:2048',
         ]);
 
-        $data['slug'] = Str::slug($request->judul) . '-' . time();
-        $data['is_featured'] = $request->has('is_featured');
+        try {
+            $data['slug'] = Str::slug($request->judul) . '-' . time();
+            $data['is_featured'] = $request->has('is_featured');
 
-        $imagePaths = [];
-        if ($request->hasFile('gambar')) {
-            foreach ($request->file('gambar') as $file) {
-                $imagePaths[] = $file->store('berita_gambar', 'public');
+            $imagePaths = [];
+            if ($request->hasFile('gambar')) {
+                foreach ($request->file('gambar') as $file) {
+                    $imagePaths[] = $file->store('berita_gambar', 'public');
+                }
             }
+            $data['gambar'] = $imagePaths;
+
+            // Simpan ke variabel $berita agar datanya bisa diambil
+            $berita = Berita::create($data);
+
+            // CATAT LOG SUKSES (Merekam Data Baru / After)
+            ActivityLog::record('Berita', 'CREATE_BERITA', "Staf mempublikasikan berita baru: {$request->judul}", 'success', null, $berita->toArray());
+
+            return redirect()->route('staff.berita.index')->with('success', 'Berita berhasil dipublikasikan!');
+
+        } catch (\Exception $e) {
+            
+            // CATAT LOG GAGAL
+            ActivityLog::record('Berita', 'FAILED_CREATE_BERITA', "Gagal mempublikasikan berita baru. Error: " . $e->getMessage(), 'error');
+            
+            return back()->withInput()->with('error', 'Terjadi kesalahan sistem saat menyimpan berita!');
         }
-        $data['gambar'] = $imagePaths;
-
-        Berita::create($data);
-
-        // <-- TAMBAHAN: Catat Log Tambah Berita
-        ActivityLog::record('Berita', 'Create', "Mempublikasikan berita baru: {$request->judul}");
-
-        return redirect()->route('staff.berita.index')->with('success', 'Berita berhasil dipublikasikan!');
     }
 
     public function edit($id)
@@ -67,6 +77,7 @@ class BeritaController extends Controller
     public function update(Request $request, $id)
     {
         $berita = Berita::findOrFail($id);
+        
         $data = $request->validate([
             'judul' => 'required|string|max:255',
             'tanggal' => 'required|date',
@@ -77,59 +88,111 @@ class BeritaController extends Controller
             'gambar.*' => 'image|max:2048',
         ]);
 
-        $data['slug'] = Str::slug($request->judul) . '-' . time();
-        $data['is_featured'] = $request->has('is_featured');
+        try {
+            // 1. AMBIL DATA LAMA (Sebelum diupdate)
+            $oldData = $berita->getOriginal();
 
-        if ($request->hasFile('gambar')) {
-            if (is_array($berita->gambar)) {
-                foreach ($berita->gambar as $oldImage) {
-                    Storage::disk('public')->delete($oldImage);
+            $data['slug'] = Str::slug($request->judul) . '-' . time();
+            $data['is_featured'] = $request->has('is_featured');
+
+            if ($request->hasFile('gambar')) {
+                // Hapus gambar lama
+                if (is_array($berita->gambar)) {
+                    foreach ($berita->gambar as $oldImage) {
+                        if(Storage::disk('public')->exists($oldImage)) {
+                             Storage::disk('public')->delete($oldImage);
+                        }
+                    }
                 }
+                
+                // Simpan gambar baru
+                $imagePaths = [];
+                foreach ($request->file('gambar') as $file) {
+                    $imagePaths[] = $file->store('berita_gambar', 'public');
+                }
+                $data['gambar'] = $imagePaths;
+            } else {
+                unset($data['gambar']);
             }
-            $imagePaths = [];
-            foreach ($request->file('gambar') as $file) {
-                $imagePaths[] = $file->store('berita_gambar', 'public');
-            }
-            $data['gambar'] = $imagePaths;
-        } else {
-            unset($data['gambar']);
+
+            $berita->update($data);
+
+            // 2. AMBIL DATA BARU (Setelah diupdate)
+            $newData = $berita->getChanges();
+
+            // CATAT LOG SUKSES (Merekam Data Lama vs Data Baru)
+            ActivityLog::record('Berita', 'UPDATE_BERITA', "Staf memperbarui data berita: {$request->judul}", 'success', $oldData, $newData);
+
+            return redirect()->route('staff.berita.index')->with('success', 'Berita berhasil diperbarui!');
+
+        } catch (\Exception $e) {
+            
+            // CATAT LOG GAGAL
+            ActivityLog::record('Berita', 'FAILED_UPDATE_BERITA', "Gagal memperbarui berita (ID: {$id}). Error: " . $e->getMessage(), 'error');
+            
+            return back()->withInput()->with('error', 'Terjadi kesalahan sistem saat memperbarui berita!');
         }
-
-        $berita->update($data);
-
-        // <-- TAMBAHAN: Catat Log Update Berita
-        ActivityLog::record('Berita', 'Update', "Memperbarui data berita: {$request->judul}");
-
-        return redirect()->route('staff.berita.index')->with('success', 'Berita berhasil diperbarui!');
     }
 
     public function destroy($id)
     {
-        $berita = Berita::findOrFail($id);
-        $judulBerita = $berita->judul; // Simpan judul untuk log sebelum dihapus
+        try {
+            $berita = Berita::findOrFail($id);
+            $judulBerita = $berita->judul; 
 
-        if (is_array($berita->gambar)) {
-            foreach ($berita->gambar as $img) {
-                Storage::disk('public')->delete($img);
+            // 1. AMBIL DATA LAMA (Untuk dicatat sebelum dilenyapkan)
+            $oldData = $berita->toArray();
+
+            if (is_array($berita->gambar)) {
+                foreach ($berita->gambar as $img) {
+                    if(Storage::disk('public')->exists($img)) {
+                        Storage::disk('public')->delete($img);
+                    }
+                }
             }
+            $berita->delete();
+
+            // CATAT LOG WARNING (Merekam Data Lama yang Dihapus)
+            ActivityLog::record('Berita', 'DELETE_BERITA', "Staf menghapus berita berjudul: {$judulBerita}", 'warning', $oldData, null);
+
+            return redirect()->route('staff.berita.index')->with('success', 'Berita berhasil dihapus!');
+
+        } catch (\Exception $e) {
+            
+            // CATAT LOG GAGAL
+            ActivityLog::record('Berita', 'FAILED_DELETE_BERITA', "Gagal menghapus berita (ID: {$id}). Error: " . $e->getMessage(), 'error');
+            
+            return back()->with('error', 'Terjadi kesalahan sistem saat menghapus berita!');
         }
-        $berita->delete();
-
-        // <-- TAMBAHAN: Catat Log Hapus Berita
-        ActivityLog::record('Berita', 'Delete', "Menghapus berita berjudul: {$judulBerita}");
-
-        return redirect()->route('staff.berita.index')->with('success', 'Berita berhasil dihapus!');
     }
 
     public function toggleFeatured($id)
     {
-        $berita = Berita::findOrFail($id);
-        $berita->update(['is_featured' => !$berita->is_featured]);
+        try {
+            $berita = Berita::findOrFail($id);
+            
+            // 1. AMBIL DATA LAMA
+            $oldData = $berita->getOriginal();
+            
+            $berita->update(['is_featured' => !$berita->is_featured]);
 
-        // <-- TAMBAHAN: Catat Log Toggle Status Unggulan
-        $statusUnggulan = $berita->is_featured ? 'menjadi unggulan' : 'dihapus dari daftar unggulan';
-        ActivityLog::record('Berita', 'Update', "Mengubah status berita '{$berita->judul}' {$statusUnggulan}");
+            // 2. AMBIL DATA BARU
+            $newData = $berita->getChanges();
 
-        return back()->with('success', 'Status unggulan berita diperbarui!');
+            // Tentukan status untuk pesan log
+            $statusUnggulan = $berita->is_featured ? 'menjadi unggulan' : 'dihapus dari daftar unggulan';
+            
+            // CATAT LOG SUKSES (Merekam Perubahan)
+            ActivityLog::record('Berita', 'TOGGLE_FEATURED_BERITA', "Staf mengubah status berita '{$berita->judul}' {$statusUnggulan}", 'success', $oldData, $newData);
+
+            return back()->with('success', 'Status unggulan berita diperbarui!');
+
+        } catch (\Exception $e) {
+            
+            // CATAT LOG GAGAL
+            ActivityLog::record('Berita', 'FAILED_TOGGLE_FEATURED', "Gagal mengubah status unggulan berita (ID: {$id}). Error: " . $e->getMessage(), 'error');
+            
+            return back()->with('error', 'Terjadi kesalahan sistem saat mengubah status unggulan!');
+        }
     }
 }

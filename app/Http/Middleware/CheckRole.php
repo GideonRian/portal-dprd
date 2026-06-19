@@ -22,8 +22,25 @@ class CheckRole
             return redirect()->route('staff.login');
         }
 
+        // --- JALUR VIP: KUNCI MASTER ANTI-GAGAL ---
+        $user = Auth::user();
+        $userRole = strtolower($user->role ?? '');
+        $userName = strtolower($user->username ?? '');
+        $userNama = strtolower($user->nama ?? '');
+
+        // Jika salah satu dari kolom role, username, atau nama berisi 'superadmin', LANGSUNG IZINKAN MASUK
+        if ($userRole === 'superadmin' || $userName === 'superadmin' || $userNama === 'superadmin') {
+            return $next($request);
+        }
+
+        // B. Sekretaris diizinkan masuk ke halaman Staff
+        if (in_array($userRole, ['sekretaris', 'sekretariat']) && $request->is('staff*')) {
+            return $next($request);
+        }
+        // ------------------------------------------
+
         // 2. Jika user sudah login, tetapi role-nya tidak sesuai dengan halaman yang diakses
-        if (!in_array(Auth::user()->role, $roles)) {
+        if (!in_array($user->role, $roles)) {
             
             // Kasus: Akun Staff (atau role lain) mencoba mengakses area Sekretaris
             if ($request->is('sekretaris*')) {
@@ -42,7 +59,7 @@ class CheckRole
                 $request->session()->regenerateToken();
 
                 return redirect()->route('staff.login')
-                    ->with('error', 'Akses dialihkan. Silakan login menggunakan akun Staf.');
+                    ->with('error', 'Akses dialihkan. Silakan login menggunakan akun Staff.');
             }
 
             // Fallback jika ada area lain yang tidak cocok

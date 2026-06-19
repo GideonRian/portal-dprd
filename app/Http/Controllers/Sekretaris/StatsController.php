@@ -11,7 +11,8 @@ use App\Models\Dokumen;
 use App\Models\Agenda;
 use App\Models\VisitLog;
 use Carbon\Carbon;
-use Barryvdh\DomPDF\Facade\Pdf; // <-- TAMBAHAN IMPORT PDF
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\ActivityLog;
 
 class StatsController extends Controller
 {
@@ -107,17 +108,40 @@ class StatsController extends Controller
     }
 
     // Ekspor Menjadi PDF
+    // Ekspor Menjadi PDF
     public function exportReport()
     {
-        $data = $this->getStatsData();
-        
-        // Memuat view khusus PDF (Kita buat di langkah 3)
-        $pdf = Pdf::loadView('Pimpinan-Sekretariat.stats-pdf', $data);
-        
-        // Atur ukuran kertas
-        $pdf->setPaper('A4', 'portrait');
+        try {
+            $data = $this->getStatsData();
+            
+            // Memuat view khusus PDF
+            $pdf = Pdf::loadView('Pimpinan-Sekretariat.stats-pdf', $data);
+            
+            // Atur ukuran kertas
+            $pdf->setPaper('A4', 'portrait');
 
-        // Unduh file secara otomatis
-        return $pdf->download('Laporan_Statistik_DPRD_' . date('d-M-Y') . '.pdf');
+            // CATAT AKTIVITAS SUKSES
+            ActivityLog::record(
+                'Statistik', 
+                'EXPORT_PDF', 
+                'Pimpinan / Sekretaris berhasil mengunduh Laporan Statistik Web.', 
+                'success'
+            );
+
+            // Unduh file secara otomatis
+            return $pdf->download('Laporan_Statistik_DPRD_' . date('d-M-Y') . '.pdf');
+
+        } catch (\Exception $e) {
+            
+            // CATAT AKTIVITAS GAGAL
+            ActivityLog::record(
+                'Statistik', 
+                'FAILED_EXPORT_PDF', 
+                'Gagal membuat atau mengunduh Laporan PDF. Error: ' . $e->getMessage(), 
+                'error'
+            );
+
+            return back()->with('error', 'Terjadi kesalahan sistem saat membuat Laporan PDF!');
+        }
     }
 }

@@ -61,49 +61,61 @@ class ReportController extends Controller
             'end_date'   => 'required|date|after_or_equal:start_date',
         ]);
 
-        $type = $request->type;
-        $start = Carbon::parse($request->start_date)->startOfDay();
-        $end = Carbon::parse($request->end_date)->endOfDay();
-        
-        $data = [
-            'type'  => $type,
-            'start' => $start->translatedFormat('d F Y'),
-            'end'   => $end->translatedFormat('d F Y'),
-            'items' => []
-        ];
+        try {
+            $type = $request->type;
+            $start = Carbon::parse($request->start_date)->startOfDay();
+            $end = Carbon::parse($request->end_date)->endOfDay();
+            
+            $data = [
+                'type'  => $type,
+                'start' => $start->translatedFormat('d F Y'),
+                'end'   => $end->translatedFormat('d F Y'),
+                'items' => []
+            ];
 
-        $titlePrefix = "";
+            $titlePrefix = "";
 
-        // Logika Pengambilan Data Berdasarkan Tipe
-        if ($type == 'aktivitas') {
-            $data['items'] = ActivityLog::with('user')->whereBetween('created_at', [$start, $end])->latest()->get();
-            $titlePrefix = "Laporan_Aktivitas_Admin_";
-        } 
-        elseif ($type == 'aspirasi') {
-            $data['items'] = Aspirasi::whereBetween('created_at', [$start, $end])->latest()->get();
-            $titlePrefix = "Laporan_Aspirasi_Masyarakat_";
-        } 
-        elseif ($type == 'konten') {
-            $beritas = Berita::whereBetween('created_at', [$start, $end])->get()->map(function($item) { $item->jenis = 'Berita'; return $item; });
-            $dokumens = Dokumen::whereBetween('created_at', [$start, $end])->get()->map(function($item) { $item->jenis = 'Dokumen'; return $item; });
-            $data['items'] = $beritas->concat($dokumens)->sortByDesc('created_at');
-            $titlePrefix = "Laporan_Konten_Website_";
-        } 
-        elseif ($type == 'kunjungan') {
-            $data['items'] = VisitLog::whereBetween('created_at', [$start, $end])->latest()->get();
-            $titlePrefix = "Laporan_Kunjungan_Website_";
+            // Logika Pengambilan Data Berdasarkan Tipe
+            if ($type == 'aktivitas') {
+                $data['items'] = ActivityLog::with('user')->whereBetween('created_at', [$start, $end])->latest()->get();
+                $titlePrefix = "Laporan_Aktivitas_Admin_";
+            } 
+            elseif ($type == 'aspirasi') {
+                $data['items'] = Aspirasi::whereBetween('created_at', [$start, $end])->latest()->get();
+                $titlePrefix = "Laporan_Aspirasi_Masyarakat_";
+            } 
+            elseif ($type == 'konten') {
+                $beritas = Berita::whereBetween('created_at', [$start, $end])->get()->map(function($item) { $item->jenis = 'Berita'; return $item; });
+                $dokumens = Dokumen::whereBetween('created_at', [$start, $end])->get()->map(function($item) { $item->jenis = 'Dokumen'; return $item; });
+                $data['items'] = $beritas->concat($dokumens)->sortByDesc('created_at');
+                $titlePrefix = "Laporan_Konten_Website_";
+            } 
+            elseif ($type == 'kunjungan') {
+                $data['items'] = VisitLog::whereBetween('created_at', [$start, $end])->latest()->get();
+                $titlePrefix = "Laporan_Kunjungan_Website_";
+            }
+
+            // Render PDF
+            $pdf = Pdf::loadView('Pimpinan-Sekretariat.report-pdf', $data);
+            $pdf->setPaper('A4', 'landscape');
+
+            $fileName = $titlePrefix . $start->format('Y-m-d') . '_to_' . $end->format('Y-m-d') . '_' . time() . '.pdf';
+            
+            // Simpan ke Storage agar masuk ke daftar "Recent Reports"
+            Storage::disk('public')->put('reports/' . $fileName, $pdf->output());
+
+            // CATAT AKTIVITAS SUKSES
+            ActivityLog::record('Laporan', 'GENERATE_REPORT', "Pimpinan / Sekretaris men-generate laporan {$type} (Periode: {$request->start_date} s/d {$request->end_date})", 'success');
+
+            return $pdf->download($fileName);
+
+        } catch (\Exception $e) {
+            
+            // CATAT AKTIVITAS GAGAL
+            ActivityLog::record('Laporan', 'FAILED_GENERATE_REPORT', "Gagal men-generate laporan {$request->type}. Error: " . $e->getMessage(), 'error');
+
+            return back()->with('error', 'Terjadi kesalahan sistem saat membuat laporan!');
         }
-
-        // Render PDF
-        $pdf = Pdf::loadView('Pimpinan-Sekretariat.report-pdf', $data);
-        $pdf->setPaper('A4', 'landscape');
-
-        $fileName = $titlePrefix . $start->format('Y-m-d') . '_to_' . $end->format('Y-m-d') . '_' . time() . '.pdf';
-        
-        // Simpan ke Storage agar masuk ke daftar "Recent Reports"
-        Storage::disk('public')->put('reports/' . $fileName, $pdf->output());
-
-        return $pdf->download($fileName);
     }
 
     /**
@@ -111,16 +123,30 @@ class ReportController extends Controller
      */
     public function downloadRecent($fileName)
     {
-        $filePath = 'reports/' . $fileName;
-        
-        // PERBAIKAN: Menggunakan jalur absolut dengan storage_path() 
-        // dan mengembalikannya melalui fungsi pembantu response()->download()
-        $absolutePath = storage_path('app/public/' . $filePath);
+        try {
+            $filePath = 'reports/' . $fileName;
+            
+            $absolutePath = storage_path('app/public/' . $filePath);
 
-        if (file_exists($absolutePath)) {
-            return response()->download($absolutePath);
+            if (file_exists($absolutePath)) {
+                
+                // CATAT AKTIVITAS SUKSES
+                ActivityLog::record('Laporan', 'DOWNLOAD_REPORT', "Pimpinan / Sekretaris mengunduh arsip laporan: {$fileName}", 'success');
+                
+                return response()->download($absolutePath);
+            }
+
+            // CATAT AKTIVITAS WARNING JIKA FILE HILANG
+            ActivityLog::record('Laporan', 'REPORT_NOT_FOUND', "Gagal mengunduh arsip laporan (File hilang/tidak ditemukan): {$fileName}", 'warning');
+
+            return back()->with('error', 'File laporan tidak ditemukan.');
+
+        } catch (\Exception $e) {
+            
+            // CATAT AKTIVITAS GAGAL
+            ActivityLog::record('Laporan', 'FAILED_DOWNLOAD_REPORT', "Gagal mengunduh arsip laporan {$fileName}. Error: " . $e->getMessage(), 'error');
+
+            return back()->with('error', 'Terjadi kesalahan sistem saat mengunduh laporan!');
         }
-
-        return back()->with('error', 'File laporan tidak ditemukan.');
     }
 }
