@@ -5,13 +5,13 @@
 @section('content')
     <style>
         .bg-hero-pattern {
-            background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=2070&auto=format&fit=crop');
+            background-image: url('{{ asset('images/tapanuliselatans.jpg') }}');
             background-size: cover;
             background-position: center;
         }
 
         .bg-cta-pattern {
-            background-image: url('https://images.unsplash.com/photo-1577962917302-cd874c4e31d2?q=80&w=2070&auto=format&fit=crop');
+            background-image: url('{{ asset('images/tapselsidangfoto.jpg') }}');
             background-size: cover;
             background-position: center;
         }
@@ -119,16 +119,20 @@
                     <div
                         class="animate-float rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20 relative h-[250px] lg:h-[350px]">
                         <div id="hero-slider" class="w-full h-full relative">
-                            <img src="https://images.unsplash.com/photo-1541872703-74c5e44368f9?q=80&w=1000&auto=format&fit=crop"
+                            <img src="{{ asset('images/tapanuliselatans.jpg') }}"
                                 class="slider-image absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 opacity-100">
-                            <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1000&auto=format&fit=crop"
+
+                            <img src="{{ asset('images/bphdprd.png') }}"
                                 class="slider-image absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 opacity-0">
-                            <img src="https://images.unsplash.com/photo-1556761175-5973dc0f32d7?q=80&w=1000&auto=format&fit=crop"
+
+                            {{-- <img src="{{ asset('images/slider3.jpg') }}"
                                 class="slider-image absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 opacity-0">
-                            <img src="https://images.unsplash.com/photo-1577962917302-cd874c4e31d2?q=80&w=1000&auto=format&fit=crop"
+
+                            <img src="{{ asset('images/slider4.jpg') }}"
                                 class="slider-image absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 opacity-0">
-                            <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1000&auto=format&fit=crop"
-                                class="slider-image absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 opacity-0">
+
+                            <img src="{{ asset('images/slider5.png') }}"
+                                class="slider-image absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 opacity-0"> --}}
                         </div>
                     </div>
                 </div>
