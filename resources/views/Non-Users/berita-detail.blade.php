@@ -10,7 +10,8 @@
         <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-4 text-sm text-gray-500">
             <span class="bg-blue-100 text-blue-700 font-bold px-3 py-1 rounded-full">{{ $berita->kategori }}</span>
             <span><i class="fa-regular fa-calendar mr-1"></i>
-                {{ \Carbon\Carbon::parse($berita->tanggal)->translatedFormat('d F Y') }}</span>
+                {{-- PERBAIKAN: Penambahan locale('id') agar bulannya bahasa Indonesia --}}
+                {{ \Carbon\Carbon::parse($berita->tanggal)->locale('id')->translatedFormat('d F Y') }}</span>
             <span><i class="fa-regular fa-eye mr-1"></i> {{ number_format($berita->views) }} Tayangan</span>
             <span id="top-likes-counter"><i class="fa-regular fa-thumbs-up mr-1"></i> {{ number_format($berita->likes) }}
                 Menyukai</span>
@@ -60,7 +61,8 @@
             <div class="w-full md:w-auto text-center md:text-left">
                 <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Dipublikasikan pada</p>
                 <p class="font-bold text-gray-900">
-                    {{ \Carbon\Carbon::parse($berita->tanggal)->translatedFormat('l, d F Y') }}</p>
+                    {{-- PERBAIKAN: Penambahan locale('id') agar harinya bahasa Indonesia --}}
+                    {{ \Carbon\Carbon::parse($berita->tanggal)->locale('id')->translatedFormat('l, d F Y') }}</p>
             </div>
 
             <div class="flex flex-wrap items-center justify-center gap-3 w-full md:w-auto">

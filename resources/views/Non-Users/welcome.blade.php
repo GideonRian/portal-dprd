@@ -202,59 +202,61 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div class="group relative h-80 rounded-2xl overflow-hidden shadow-lg cursor-pointer reveal">
-                    <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=600&auto=format&fit=crop"
+                    <img src="{{ asset('images/photodprd.png') }}"
                         class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-700">
-                    <div class="absolute inset-0 bg-gradient-to-t from-blue-900/90 via-black/20 to-transparent"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-blue-900/80 via-black/10 to-transparent"></div>
                     <div
-                        class="absolute bottom-0 inset-x-0 p-5 glass-card m-2 rounded-xl transform translate-y-2 group-hover:translate-y-0 transition duration-300">
+                        class="absolute bottom-0 inset-x-0 p-5 bg-white/90 backdrop-blur-sm border border-white/50 m-2 rounded-xl transform translate-y-2 group-hover:translate-y-0 transition duration-300">
                         <h3 class="text-lg font-bold text-gray-900 mb-1">Profil Anggota</h3>
-                        <p class="text-xs text-gray-600 mb-3 opacity-80 group-hover:opacity-100 transition">Kenali anggota
+                        <p class="text-xs text-gray-700 mb-3 opacity-90 group-hover:opacity-100 transition">Kenali anggota
                             DPRD yang mewakili aspirasi rakyat Tapanuli Selatan</p>
                         <a href="{{ route('profil.anggota') }}"
-                            class="text-sm font-bold text-blue-600 flex items-center gap-1 group-hover:text-blue-800">Selengkapnya
+                            class="text-sm font-bold text-blue-700 flex items-center gap-1 group-hover:text-blue-900">Selengkapnya
                             <i class="fa-solid fa-angle-right"></i></a>
                     </div>
                 </div>
+
                 <div class="group relative h-80 rounded-2xl overflow-hidden shadow-lg cursor-pointer reveal delay-100">
-                    <img src="https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=600&auto=format&fit=crop"
+                    <img src="{{ asset('images/aspirasirakyat.png') }}"
                         class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-700">
-                    <div class="absolute inset-0 bg-gradient-to-t from-blue-900/90 via-black/20 to-transparent"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-blue-900/80 via-black/10 to-transparent"></div>
                     <div
-                        class="absolute bottom-0 inset-x-0 p-5 glass-card m-2 rounded-xl transform translate-y-2 group-hover:translate-y-0 transition duration-300">
+                        class="absolute bottom-0 inset-x-0 p-5 bg-white/90 backdrop-blur-sm border border-white/50 m-2 rounded-xl transform translate-y-2 group-hover:translate-y-0 transition duration-300">
                         <h3 class="text-lg font-bold text-gray-900 mb-1">Layanan Aspirasi</h3>
-                        <p class="text-xs text-gray-600 mb-3 opacity-80 group-hover:opacity-100 transition">Sampaikan
+                        <p class="text-xs text-gray-700 mb-3 opacity-90 group-hover:opacity-100 transition">Sampaikan
                             aspirasi dan keluhan Anda langsung kepada DPRD</p>
                         <a href="{{ route('layanan.aspirasi') }}"
-                            class="text-sm font-bold text-blue-600 flex items-center gap-1 group-hover:text-blue-800">Selengkapnya
+                            class="text-sm font-bold text-blue-700 flex items-center gap-1 group-hover:text-blue-900">Selengkapnya
                             <i class="fa-solid fa-angle-right"></i></a>
                     </div>
                 </div>
+
                 <div class="group relative h-80 rounded-2xl overflow-hidden shadow-lg cursor-pointer reveal delay-200">
-                    <img src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=600&auto=format&fit=crop"
+                    <img src="{{ asset('images/beritadaninfo.png') }}"
                         class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-700">
-                    <div class="absolute inset-0 bg-gradient-to-t from-blue-900/90 via-black/20 to-transparent"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-blue-900/80 via-black/10 to-transparent"></div>
                     <div
-                        class="absolute bottom-0 inset-x-0 p-5 glass-card m-2 rounded-xl transform translate-y-2 group-hover:translate-y-0 transition duration-300">
+                        class="absolute bottom-0 inset-x-0 p-5 bg-white/90 backdrop-blur-sm border border-white/50 m-2 rounded-xl transform translate-y-2 group-hover:translate-y-0 transition duration-300">
                         <h3 class="text-lg font-bold text-gray-900 mb-1">Berita & Informasi</h3>
-                        <p class="text-xs text-gray-600 mb-3 opacity-80 group-hover:opacity-100 transition">Informasi
+                        <p class="text-xs text-gray-700 mb-3 opacity-90 group-hover:opacity-100 transition">Informasi
                             terkini tentang kegiatan dan program DPRD</p>
                         <a href="{{ route('berita') }}"
-                            class="text-sm font-bold text-blue-600 flex items-center gap-1 group-hover:text-blue-800">Selengkapnya
+                            class="text-sm font-bold text-blue-700 flex items-center gap-1 group-hover:text-blue-900">Selengkapnya
                             <i class="fa-solid fa-angle-right"></i></a>
                     </div>
                 </div>
+
                 <div class="group relative h-80 rounded-2xl overflow-hidden shadow-lg cursor-pointer reveal delay-300">
-                    <img src="https://images.unsplash.com/photo-1540317580384-e5d43616b9aa?q=80&w=600&auto=format&fit=crop"
+                    <img src="{{ asset('images/agenda.png') }}"
                         class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-700">
-                    <div class="absolute inset-0 bg-gradient-to-t from-blue-900/90 via-black/20 to-transparent"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-blue-900/80 via-black/10 to-transparent"></div>
                     <div
-                        class="absolute bottom-0 inset-x-0 p-5 glass-card m-2 rounded-xl transform translate-y-2 group-hover:translate-y-0 transition duration-300">
+                        class="absolute bottom-0 inset-x-0 p-5 bg-white/90 backdrop-blur-sm border border-white/50 m-2 rounded-xl transform translate-y-2 group-hover:translate-y-0 transition duration-300">
                         <h3 class="text-lg font-bold text-gray-900 mb-1">Agenda Kegiatan</h3>
-                        <p class="text-xs text-gray-600 mb-3 opacity-80 group-hover:opacity-100 transition">Jadwal rapat,
+                        <p class="text-xs text-gray-700 mb-3 opacity-90 group-hover:opacity-100 transition">Jadwal rapat,
                             hearing, dan kegiatan DPRD secara berkala</p>
-                        <!-- FIXED ROUTE NAME BELOW -->
                         <a href="{{ route('publik.agenda') }}"
-                            class="text-sm font-bold text-blue-600 flex items-center gap-1 group-hover:text-blue-800">Selengkapnya
+                            class="text-sm font-bold text-blue-700 flex items-center gap-1 group-hover:text-blue-900">Selengkapnya
                             <i class="fa-solid fa-angle-right"></i></a>
                     </div>
                 </div>

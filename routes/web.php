@@ -101,10 +101,36 @@ Route::middleware([\App\Http\Middleware\TrackPublicTraffic::class])->group(funct
     })->name('profil.anggota.detail');
 
 
-    // --- Pusat Dokumen ---
-    Route::get('/pusat-dokumen', function () {
-        $dokumens = Dokumen::where('status_persetujuan', 'Approved')->latest()->get();
+    // --- Pusat Dokumen (Diperbarui dengan Fitur Filter & Pencarian) ---
+    Route::get('/pusat-dokumen', function (Illuminate\Http\Request $request) {
+        
+        // Mulai query dengan memastikan hanya dokumen yang sudah di-approve
+        $query = Dokumen::where('status_persetujuan', 'Approved');
+
+        // Filter 1: Jika ada input di kotak pencarian (Mencari judul atau deskripsi)
+        if ($request->filled('search')) {
+            $query->where(function($q) use ($request) {
+                $q->where('judul', 'like', '%' . $request->search . '%')
+                  ->orWhere('deskripsi', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        // Filter 2: Jika kategori dipilih dari dropdown
+        if ($request->filled('kategori')) {
+            $query->where('kategori', $request->kategori);
+        }
+
+        // Filter 3: Jika tahun dipilih dari dropdown
+        if ($request->filled('tahun')) {
+            // whereYear akan mencocokkan tahun dari kolom created_at
+            $query->whereYear('created_at', $request->tahun);
+        }
+
+        // Tampilkan dokumen terbaru (diurutkan berdasarkan tanggal buat)
+        $dokumens = $query->latest()->get();
+        
         return view('Non-Users.pusat-dokumen', compact('dokumens'));
+        
     })->name('pusat.dokumen');
 
 
@@ -288,7 +314,6 @@ Route::prefix('superadmin')->name('superadmin.')->group(function () {
     // ==========================================
     // 2. RUTE TERLINDUNGI (Wajib Login & Wajib SuperAdmin)
     // ==========================================
-    // PERBAIKAN: Middleware 'role:superadmin' ditambahkan di sini!
     Route::middleware(['auth', 'role:superadmin'])->group(function () {
         
         // Verifikasi 2FA Challenge & Proses Logout

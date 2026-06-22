@@ -78,7 +78,7 @@
                         </li>
                         <li class="flex items-center">
                             <i class="fa-solid fa-envelope text-blue-400 mr-4"></i>
-                            <span class="opacity-80">info@dprd-tapsel.go.id</span>
+                            <span class="opacity-80">sekretariatdprd@tapselkab.go.id</span>
                         </li>
                     </ul>
                 </div>

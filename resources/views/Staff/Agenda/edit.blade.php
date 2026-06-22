@@ -95,28 +95,20 @@
                         class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none">{{ $agenda->deskripsi }}</textarea>
                 </div>
 
-                <div class="mb-6">
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Susunan Acara (Opsional)</label>
-                    <textarea name="susunan_acara" rows="5"
-                        placeholder="Contoh:&#10;Pembukaan oleh Ketua&#10;Laporan Bupati&#10;Penutup"
-                        class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none">{{ $agenda->susunan_acara ?? old('susunan_acara') }}</textarea>
-                    <p class="text-xs text-gray-400 mt-2 italic">*Gunakan baris baru (Enter) untuk memisahkan setiap poin
-                        acara.</p>
-                </div>
-
                 <div class="mb-8">
                     <label class="block text-sm font-bold text-gray-700 mb-2">Ganti Gambar <span
                             class="text-gray-400 font-normal">(Opsional)</span></label>
-                    
+
                     {{-- Tambahkan ID upload-gambar --}}
                     <input type="file" id="upload-gambar" name="gambar" accept="image/*"
                         class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none transition">
-                    
+
                     {{-- Pesan Error Tersembunyi --}}
                     <p id="error-gambar" class="text-sm font-bold text-red-500 mt-2 hidden">
                         <i class="fa-solid fa-triangle-exclamation mr-1"></i> Ukuran gambar terlalu besar! Maksimal 2MB.
                     </p>
-                    <p class="text-xs text-gray-400 mt-2" id="hint-gambar">Biarkan kosong jika tidak ingin mengubah gambar lama. Format: JPG, PNG. Maksimal 2MB.</p>
+                    <p class="text-xs text-gray-400 mt-2" id="hint-gambar">Biarkan kosong jika tidak ingin mengubah gambar
+                        lama. Format: JPG, PNG. Maksimal 2MB.</p>
                 </div>
 
                 <div class="flex gap-4 pt-6 border-t border-gray-100">
@@ -133,13 +125,13 @@
 
     {{-- Script Pengecekan Ukuran File 2MB --}}
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const fileInput = document.getElementById('upload-gambar');
             const errorMsg = document.getElementById('error-gambar');
             const hintMsg = document.getElementById('hint-gambar');
 
             if (fileInput) {
-                fileInput.addEventListener('change', function () {
+                fileInput.addEventListener('change', function() {
                     const file = this.files[0];
                     if (file) {
                         const maxSize = 2 * 1024 * 1024; // 2MB dalam Bytes

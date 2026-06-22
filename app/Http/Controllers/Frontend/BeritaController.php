@@ -9,10 +9,29 @@ use App\Models\Berita;
 class BeritaController extends Controller
 {
     // Halaman Daftar Berita (Publik)
-    public function index()
+    public function index(Request $request)
     {
-        $beritas = Berita::latest()->get();
-        $featured = Berita::where('is_featured', true)->latest()->first();
+        // 1. Ambil Berita Featured HANYA jika tidak ada request pencarian
+        $featured = null;
+        if (!$request->filled('search')) {
+            $featured = Berita::where('is_featured', true)->latest()->first();
+        }
+
+        // 2. Mulai Query Data Berita
+        $query = Berita::latest();
+
+        // 3. Logika Filter Pencarian Dinamis (DIperbaiki: Hapus isi_berita)
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('judul', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('ringkasan', 'LIKE', "%{$searchTerm}%")
+                  ->orWhere('kategori', 'LIKE', "%{$searchTerm}%");
+            });
+        }
+
+        // 4. Ambil Data menggunakan Paginasi (9 Berita per halaman)
+        $beritas = $query->paginate(9);
 
         return view('Non-Users.berita', compact('beritas', 'featured'));
     }
@@ -30,7 +49,7 @@ class BeritaController extends Controller
         return view('Non-Users.berita-detail', compact('berita', 'berita_lainnya'));
     }
 
-    // <-- 2. TOMBOL LIKE BERBASIS AJAH & SESSION (Mencegah Spamming Click)
+    // <-- 2. TOMBOL LIKE BERBASIS AJAX & SESSION (Mencegah Spamming Click)
     public function like($id)
     {
         $berita = Berita::findOrFail($id);

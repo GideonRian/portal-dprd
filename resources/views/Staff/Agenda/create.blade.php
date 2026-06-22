@@ -86,15 +86,6 @@
                         class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none"></textarea>
                 </div>
 
-                <div class="mb-6">
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Susunan Acara (Opsional)</label>
-                    <textarea name="susunan_acara" rows="5"
-                        placeholder="Contoh:&#10;Pembukaan oleh Ketua&#10;Laporan Bupati&#10;Penutup"
-                        class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none"></textarea>
-                    <p class="text-xs text-gray-400 mt-2 italic">*Gunakan baris baru (Enter) untuk memisahkan setiap poin
-                        acara.</p>
-                </div>
-
                 <div class="mb-8">
                     <label class="block text-sm font-bold text-gray-700 mb-2">Lampirkan Gambar (Max 1)</label>
 
