@@ -110,7 +110,7 @@
 
                 <button type="submit"
                     class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold transition-all shadow-md">
-                    C Cari
+                    Cari
                 </button>
             </div>
         </form>
@@ -155,10 +155,12 @@
                                 <span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
                                 {{ $item->dapil }}
                             </div>
-                            @if ($item->badan)
-                                <div class="flex items-center text-xs text-gray-500">
-                                    <span class="w-2 h-2 rounded-full bg-purple-500 mr-2"></span>
-                                    {{ $item->badan }}
+                            
+                            {{-- PERUBAHAN: Tampilkan array badan digabung dengan koma --}}
+                            @if (!empty($item->badan) && is_array($item->badan))
+                                <div class="flex items-start text-xs text-gray-500 mt-1">
+                                    <span class="w-2 h-2 rounded-full bg-purple-500 mr-2 mt-1 shrink-0"></span>
+                                    <span class="leading-relaxed">{{ implode(', ', $item->badan) }}</span>
                                 </div>
                             @endif
                         </div>
@@ -192,19 +194,16 @@
     {{-- ======================================================== --}}
     <div id="memberModal" class="relative z-[80] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
 
-        {{-- Backdrop Gelap --}}
         <div class="fixed inset-0 bg-gray-900/75 backdrop-blur-sm transition-opacity" onclick="closeMemberModal()"></div>
 
-        {{-- Wadah Posisi Modal --}}
         <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
             <div
                 class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0 pointer-events-none">
 
-                {{-- KOTAK MODAL UTAMA --}}
                 <div
                     class="relative transform overflow-hidden rounded-[2rem] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-4xl border border-gray-100 pointer-events-auto flex flex-col max-h-[90vh]">
 
-                    {{-- MODAL HEADER (Sticky) --}}
+                    {{-- MODAL HEADER --}}
                     <div
                         class="shrink-0 bg-white px-6 py-5 sm:px-8 border-b border-gray-100 flex justify-between items-center z-20 shadow-sm">
                         <div class="flex items-center gap-3">
@@ -219,7 +218,7 @@
                         </button>
                     </div>
 
-                    {{-- MODAL BODY (Area yang di-scroll independen) --}}
+                    {{-- MODAL BODY --}}
                     <div class="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-gray-50/30" id="member-modal-content">
 
                         {{-- Loader --}}
@@ -232,43 +231,27 @@
                         <div id="m-member-real-content" class="hidden p-6 sm:p-8 space-y-8">
 
                             {{-- KARTU IDENTITAS UTAMA (Atas) --}}
-                            <div
-                                class="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm flex flex-col md:flex-row gap-8 items-center md:items-start relative overflow-hidden">
-                                {{-- Aksen dekoratif --}}
-                                <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full z-0 opacity-50">
-                                </div>
+                            <div class="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm flex flex-col md:flex-row gap-8 items-center md:items-start relative overflow-hidden">
+                                <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full z-0 opacity-50"></div>
 
                                 <div class="w-32 h-32 md:w-40 md:h-40 shrink-0 relative z-10">
-                                    <img id="m-member-foto" src="" alt="Foto"
-                                        class="w-full h-full object-cover rounded-2xl shadow-md border-4 border-white">
+                                    <img id="m-member-foto" src="" alt="Foto" class="w-full h-full object-cover rounded-2xl shadow-md border-4 border-white">
                                 </div>
 
                                 <div class="flex-grow text-center md:text-left relative z-10">
-                                    <span id="m-member-partai"
-                                        class="bg-yellow-100 text-yellow-800 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider mb-3 inline-block"></span>
-                                    <h2 id="m-member-nama"
-                                        class="text-2xl md:text-3xl font-black text-gray-900 mb-1 leading-tight"></h2>
+                                    <span id="m-member-partai" class="bg-yellow-100 text-yellow-800 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider mb-3 inline-block"></span>
+                                    <h2 id="m-member-nama" class="text-2xl md:text-3xl font-black text-gray-900 mb-1 leading-tight"></h2>
                                     <p id="m-member-jabatan" class="text-lg font-bold text-blue-600 mb-4"></p>
 
-                                    <div
-                                        class="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm text-gray-600">
-                                        <div class="flex items-center gap-1.5"><i
-                                                class="fa-solid fa-location-dot text-gray-400"></i> <span
-                                                id="m-member-dapil" class="font-medium"></span></div>
+                                    <div class="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm text-gray-600">
+                                        <div class="flex items-center gap-1.5"><i class="fa-solid fa-location-dot text-gray-400"></i> <span id="m-member-dapil" class="font-medium"></span></div>
                                         <div class="hidden md:block w-1 h-1 bg-gray-300 rounded-full"></div>
-                                        <div class="flex items-center gap-1.5"><i
-                                                class="fa-solid fa-cake-candles text-gray-400"></i> <span
-                                                id="m-member-ttl" class="font-medium"></span></div>
+                                        <div class="flex items-center gap-1.5"><i class="fa-solid fa-cake-candles text-gray-400"></i> <span id="m-member-ttl" class="font-medium"></span></div>
                                     </div>
-                                    <div
-                                        class="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm text-gray-600 mt-2">
-                                        <div class="flex items-center gap-1.5"><i
-                                                class="fa-solid fa-phone text-gray-400"></i> <span id="m-member-telp"
-                                                class="font-medium"></span></div>
+                                    <div class="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm text-gray-600 mt-2">
+                                        <div class="flex items-center gap-1.5"><i class="fa-solid fa-phone text-gray-400"></i> <span id="m-member-telp" class="font-medium"></span></div>
                                         <div class="hidden md:block w-1 h-1 bg-gray-300 rounded-full"></div>
-                                        <div class="flex items-center gap-1.5"><i
-                                                class="fa-solid fa-envelope text-gray-400"></i> <span id="m-member-email"
-                                                class="font-medium"></span></div>
+                                        <div class="flex items-center gap-1.5"><i class="fa-solid fa-envelope text-gray-400"></i> <span id="m-member-email" class="font-medium"></span></div>
                                     </div>
                                 </div>
                             </div>
@@ -277,39 +260,30 @@
                                 {{-- KOLOM KIRI: Posisi Dewan --}}
                                 <div class="space-y-6">
                                     <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm h-full">
-                                        <h4
-                                            class="font-black text-gray-900 mb-5 flex items-center gap-2 text-lg border-b border-gray-50 pb-3">
+                                        <h4 class="font-black text-gray-900 mb-5 flex items-center gap-2 text-lg border-b border-gray-50 pb-3">
                                             <i class="fa-solid fa-sitemap text-blue-500"></i> Alat Kelengkapan
                                         </h4>
 
                                         <div class="space-y-4">
                                             <div id="wrapper-komisi" class="hidden">
-                                                <p
-                                                    class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">
-                                                    Komisi</p>
-                                                <p
-                                                    class="font-bold text-gray-800 bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
+                                                <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">Komisi</p>
+                                                <p class="font-bold text-gray-800 bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
                                                     <span id="m-member-komisi"></span>
-                                                    <span id="m-member-jabatan-komisi"
-                                                        class="text-blue-600 ml-1 text-sm block mt-1"></span>
+                                                    <span id="m-member-jabatan-komisi" class="text-blue-600 ml-1 text-sm block mt-1"></span>
                                                 </p>
                                             </div>
+                                            
+                                            {{-- PERUBAHAN: Kontainer untuk perulangan array Badan --}}
                                             <div id="wrapper-badan" class="hidden">
-                                                <p
-                                                    class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1 mt-4">
-                                                    Badan Dewan</p>
-                                                <p
-                                                    class="font-bold text-gray-800 bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
-                                                    <span id="m-member-badan"></span>
-                                                    <span id="m-member-jabatan-badan"
-                                                        class="text-purple-600 ml-1 text-sm block mt-1"></span>
-                                                </p>
+                                                <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1 mt-4">Badan Dewan</p>
+                                                <div id="m-member-badan-container" class="space-y-2">
+                                                    <!-- Badan akan di-generate via JS disini -->
+                                                </div>
                                             </div>
 
                                             <div id="wrapper-kosong" class="text-center py-6 hidden">
                                                 <i class="fa-regular fa-folder-open text-3xl text-gray-300 mb-2"></i>
-                                                <p class="text-xs font-medium text-gray-500">Belum terdaftar di
-                                                    komisi/badan</p>
+                                                <p class="text-xs font-medium text-gray-500">Belum terdaftar di komisi/badan</p>
                                             </div>
                                         </div>
                                     </div>
@@ -318,57 +292,43 @@
                                 {{-- KOLOM KANAN: Riwayat --}}
                                 <div class="lg:col-span-2 space-y-6">
                                     <div class="bg-white rounded-2xl p-6 md:p-8 border border-gray-100 shadow-sm">
-                                        <h4
-                                            class="font-black text-gray-900 mb-6 flex items-center gap-2 text-lg border-b border-gray-50 pb-3">
-                                            <i class="fa-solid fa-clock-rotate-left text-blue-500"></i> Riwayat Hidup &
-                                            Karir
+                                        <h4 class="font-black text-gray-900 mb-6 flex items-center gap-2 text-lg border-b border-gray-50 pb-3">
+                                            <i class="fa-solid fa-clock-rotate-left text-blue-500"></i> Riwayat Hidup & Karir
                                         </h4>
-
                                         <div class="space-y-6">
                                             <div>
                                                 <div class="flex items-center gap-2 mb-2">
-                                                    <div
-                                                        class="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                                                    <div class="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
                                                         <i class="fa-solid fa-graduation-cap text-blue-600 text-xs"></i>
                                                     </div>
                                                     <h5 class="font-bold text-gray-800">Riwayat Pendidikan</h5>
                                                 </div>
-                                                <div id="m-member-pendidikan"
-                                                    class="pl-8 text-sm text-gray-600 leading-relaxed font-medium"></div>
+                                                <div id="m-member-pendidikan" class="pl-8 text-sm text-gray-600 leading-relaxed font-medium"></div>
                                             </div>
-
                                             <div class="w-full h-px bg-gray-50"></div>
-
                                             <div>
                                                 <div class="flex items-center gap-2 mb-2">
-                                                    <div
-                                                        class="w-6 h-6 rounded-full bg-orange-50 flex items-center justify-center shrink-0">
+                                                    <div class="w-6 h-6 rounded-full bg-orange-50 flex items-center justify-center shrink-0">
                                                         <i class="fa-solid fa-briefcase text-orange-600 text-xs"></i>
                                                     </div>
                                                     <h5 class="font-bold text-gray-800">Riwayat Pekerjaan</h5>
                                                 </div>
-                                                <div id="m-member-pekerjaan"
-                                                    class="pl-8 text-sm text-gray-600 leading-relaxed font-medium"></div>
+                                                <div id="m-member-pekerjaan" class="pl-8 text-sm text-gray-600 leading-relaxed font-medium"></div>
                                             </div>
-
                                             <div class="w-full h-px bg-gray-50"></div>
-
                                             <div>
                                                 <div class="flex items-center gap-2 mb-2">
-                                                    <div
-                                                        class="w-6 h-6 rounded-full bg-yellow-50 flex items-center justify-center shrink-0">
+                                                    <div class="w-6 h-6 rounded-full bg-yellow-50 flex items-center justify-center shrink-0">
                                                         <i class="fa-solid fa-medal text-yellow-600 text-xs"></i>
                                                     </div>
                                                     <h5 class="font-bold text-gray-800">Penghargaan</h5>
                                                 </div>
-                                                <div id="m-member-penghargaan"
-                                                    class="pl-8 text-sm text-gray-600 leading-relaxed font-medium"></div>
+                                                <div id="m-member-penghargaan" class="pl-8 text-sm text-gray-600 leading-relaxed font-medium"></div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -387,6 +347,7 @@
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
 
+            // Ganti URL dengan URL detail profil Anda (contoh: route name profil.anggota.detail)
             fetch(`/profil-anggota/${id}/detail`)
                 .then(res => {
                     if (!res.ok) throw new Error("Gagal mengambil data");
@@ -411,11 +372,7 @@
                     // Tanggal Lahir (Format ke Indonesia)
                     if (data.tanggal_lahir) {
                         const date = new Date(data.tanggal_lahir);
-                        const options = {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                        };
+                        const options = { year: 'numeric', month: 'long', day: 'numeric' };
                         document.getElementById('m-member-ttl').innerText = date.toLocaleDateString('id-ID', options);
                     } else {
                         document.getElementById('m-member-ttl').innerText = '-';
@@ -440,11 +397,24 @@
                         adaKelengkapan = true;
                     }
 
-                    if (data.badan) {
+                    // PERUBAHAN: Looping Data Array Badan
+                    if (data.badan && Array.isArray(data.badan) && data.badan.length > 0) {
                         wBadan.classList.remove('hidden');
-                        document.getElementById('m-member-badan').innerText = data.badan;
-                        document.getElementById('m-member-jabatan-badan').innerText = data.jabatan_badan ?
-                            `(Sebagai: ${data.jabatan_badan})` : '';
+                        let badanHtml = '';
+                        
+                        data.badan.forEach((badanItem, index) => {
+                            // Ambil jabatan yang sesuai dengan index badan, jika ada
+                            let jabatan = (data.jabatan_badan && data.jabatan_badan[index]) ? data.jabatan_badan[index] : null;
+                            
+                            badanHtml += `
+                                <p class="font-bold text-gray-800 bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
+                                    <span>${badanItem}</span>
+                                    ${jabatan ? `<span class="text-purple-600 ml-1 text-sm block mt-1">(Sebagai: ${jabatan})</span>` : ''}
+                                </p>
+                            `;
+                        });
+                        
+                        document.getElementById('m-member-badan-container').innerHTML = badanHtml;
                         adaKelengkapan = true;
                     }
 

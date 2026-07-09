@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     
     @vite(['resources/css/Non-Users/app.css', 'resources/js/Non-Users/app.js'])
 </head>
@@ -19,19 +20,25 @@
     <nav class="bg-white border-b border-gray-100 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-20">
-                <div class="flex items-center">
+                
+                <a href="{{ route('home') }}" class="flex items-center hover:opacity-80 transition-opacity duration-300">
                     <img src="{{ asset('images/logo.png') }}" alt="Logo Tapsel" class="h-16 w-auto">
                     <div class="ml-3">
                         <span class="block text-xl font-bold leading-none text-gray-800">DPRD</span>
                         <span class="block text-sm font-medium text-blue-600">Tapanuli Selatan</span>
                     </div>
-                </div>
+                </a>
                 
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="{{ route('home') }}" class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}">Beranda</a>
                     <a href="{{ route('profil.anggota') }}" class="nav-link {{ request()->routeIs('profil.anggota') ? 'active' : '' }}">Profil Anggota</a>
                     <a href="{{ route('layanan.aspirasi') }}" class="nav-link {{ request()->routeIs('layanan.aspirasi') ? 'active' : '' }}">Layanan Aspirasi</a>
                     <a href="{{ route('berita') }}" class="nav-link {{ request()->routeIs('berita') ? 'active' : '' }}">Berita</a>
+                    
+                    {{-- Menu Tambahan: Agenda dan Dokumen --}}
+                    <a href="{{ route('publik.agenda') }}" class="nav-link {{ request()->routeIs('publik.agenda') ? 'active' : '' }}">Agenda</a>
+                    <a href="{{ route('pusat.dokumen') }}" class="nav-link {{ request()->routeIs('pusat.dokumen') ? 'active' : '' }}">Dokumen</a>
+                    
                     <a href="{{ route('tentang') }}" class="nav-link {{ request()->routeIs('tentang') ? 'active' : '' }}">Tentang</a>
                     <a href="{{ route('kontak') }}" class="nav-link {{ request()->routeIs('kontak') ? 'active' : '' }}">Kontak</a>
                 </div>
@@ -44,6 +51,7 @@
     <main class="flex-grow">
         @yield('content')
     </main>
+    
     <footer class="bg-dark-footer text-white pt-16 mt-auto">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
@@ -59,10 +67,8 @@
                         Dewan Perwakilan Rakyat Daerah Kabupaten Tapanuli Selatan yang bertugas melaksanakan fungsi legislasi, anggaran, dan pengawasan untuk kepentingan masyarakat.
                     </p>
                     <div class="flex space-x-4 mt-8">
-                        <a href="#" class="w-10 h-10 rounded-full bg-blue-800 flex items-center justify-center hover:bg-blue-700 transition-colors"><i class="fa-brands fa-facebook-f"></i></a>
-                        <a href="#" class="w-10 h-10 rounded-full bg-blue-800 flex items-center justify-center hover:bg-blue-700 transition-colors"><i class="fa-brands fa-x-twitter"></i></a>
-                        <a href="#" class="w-10 h-10 rounded-full bg-blue-800 flex items-center justify-center hover:bg-blue-700 transition-colors"><i class="fa-brands fa-instagram"></i></a>
-                        <a href="#" class="w-10 h-10 rounded-full bg-blue-800 flex items-center justify-center hover:bg-blue-700 transition-colors"><i class="fa-brands fa-youtube"></i></a>
+                        <a href="https://www.instagram.com/dprdkabtapsel?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" class="w-10 h-10 rounded-full bg-blue-800 flex items-center justify-center hover:bg-blue-700 transition-colors"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="https://youtube.com/@kominfotapsel?si=jeTDCBDvnA1amquC" class="w-10 h-10 rounded-full bg-blue-800 flex items-center justify-center hover:bg-blue-700 transition-colors"><i class="fa-brands fa-youtube"></i></a>
                     </div>
                 </div>
                 <div class="lg:pl-20">

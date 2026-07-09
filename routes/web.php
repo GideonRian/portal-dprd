@@ -80,7 +80,8 @@ Route::middleware([\App\Http\Middleware\TrackPublicTraffic::class])->group(funct
         }
 
         if ($badan) {
-            $query->where('badan', $badan);
+            // PERUBAHAN 1: Gunakan whereJsonContains karena kolom badan sekarang menyimpan JSON Array
+            $query->whereJsonContains('badan', $badan);
         }
 
         $anggotas = $query->orderByRaw("CASE 
@@ -91,7 +92,14 @@ Route::middleware([\App\Http\Middleware\TrackPublicTraffic::class])->group(funct
             ->get();
 
         $list_komisi = App\Models\Anggota::whereNotNull('komisi')->distinct()->pluck('komisi');
-        $list_badan = App\Models\Anggota::whereNotNull('badan')->distinct()->pluck('badan');
+        
+        // PERUBAHAN 2: List badan menggunakan array statis agar dropdown di view tidak rusak
+        $list_badan = [
+            'Badan Anggaran (Banggar)',
+            'Badan Musyawarah (Banmus)',
+            'Badan Pembentukan Peraturan Daerah (Bapemperda)',
+            'Badan Kehormatan (BK)'
+        ];
 
         return view('Non-Users.profil-anggota', compact('anggotas', 'list_komisi', 'list_badan'));
     })->name('profil.anggota');
@@ -101,13 +109,10 @@ Route::middleware([\App\Http\Middleware\TrackPublicTraffic::class])->group(funct
     })->name('profil.anggota.detail');
 
 
-    // --- Pusat Dokumen (Diperbarui dengan Fitur Filter & Pencarian) ---
+    // --- Pusat Dokumen ---
     Route::get('/pusat-dokumen', function (Illuminate\Http\Request $request) {
-        
-        // Mulai query dengan memastikan hanya dokumen yang sudah di-approve
         $query = Dokumen::where('status_persetujuan', 'Approved');
 
-        // Filter 1: Jika ada input di kotak pencarian (Mencari judul atau deskripsi)
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
                 $q->where('judul', 'like', '%' . $request->search . '%')
@@ -115,22 +120,16 @@ Route::middleware([\App\Http\Middleware\TrackPublicTraffic::class])->group(funct
             });
         }
 
-        // Filter 2: Jika kategori dipilih dari dropdown
         if ($request->filled('kategori')) {
             $query->where('kategori', $request->kategori);
         }
 
-        // Filter 3: Jika tahun dipilih dari dropdown
         if ($request->filled('tahun')) {
-            // whereYear akan mencocokkan tahun dari kolom created_at
             $query->whereYear('created_at', $request->tahun);
         }
 
-        // Tampilkan dokumen terbaru (diurutkan berdasarkan tanggal buat)
         $dokumens = $query->latest()->get();
-        
         return view('Non-Users.pusat-dokumen', compact('dokumens'));
-        
     })->name('pusat.dokumen');
 
 
@@ -161,7 +160,6 @@ Route::middleware([\App\Http\Middleware\TrackPublicTraffic::class])->group(funct
     Route::get('/agenda-kegiatan/{id}', function ($id) {
         $agenda = Agenda::findOrFail($id);
         $related = Agenda::where('id', '!=', $id)->limit(3)->latest()->get();
-        
         return view('Non-Users.agenda-detail', compact('agenda', 'related'));
     })->name('publik.agenda.detail');
 
@@ -312,7 +310,8 @@ Route::prefix('superadmin')->name('superadmin.')->group(function () {
     });
 
     // ==========================================
-    // 2. RUTE TERLINDUNGI (Wajib Login & Wajib SuperAdmin)
+    // 2. RUTE SETENGAH TERLINDUNGI (Wajib Login, Wajib Superadmin, BELUM LULUS 2FA)
+    // Digunakan khusus untuk menumpang halaman form 2FA dan Logout
     // ==========================================
     Route::middleware(['auth', 'role:superadmin'])->group(function () {
         
@@ -320,6 +319,14 @@ Route::prefix('superadmin')->name('superadmin.')->group(function () {
         Route::get('/2fa-challenge', [\App\Http\Controllers\SuperAdmin\AuthController::class, 'show2faForm'])->name('2fa.challenge');
         Route::post('/2fa-challenge', [\App\Http\Controllers\SuperAdmin\AuthController::class, 'verify2fa'])->name('2fa.verify');
         Route::post('/logout', [\App\Http\Controllers\SuperAdmin\AuthController::class, 'logout'])->name('logout');
+        
+    });
+
+    // ==========================================
+    // 3. RUTE TERLINDUNGI PENUH (Wajib Login, Wajib SuperAdmin, DAN SUDAH LULUS 2FA)
+    // Area sensitif diletakkan di dalam sini
+    // ==========================================
+    Route::middleware(['auth', 'role:superadmin', '2fa'])->group(function () {
         
         // Dashboard
         Route::get('/dashboard', [\App\Http\Controllers\SuperAdmin\DashboardController::class, 'index'])->name('dashboard');

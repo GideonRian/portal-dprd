@@ -3,6 +3,9 @@
 @section('title', 'Beranda')
 
 @section('content')
+    <!-- Panggil CSS Swiper -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+
     <style>
         .bg-hero-pattern {
             background-image: url('{{ asset('images/tapanuliselatans.jpg') }}');
@@ -81,6 +84,38 @@
         .delay-400 {
             transition-delay: 400ms;
         }
+
+        /* Swiper Custom Pagination Color */
+        .swiper-pagination-bullet-active {
+            background: white !important;
+        }
+
+        /* =========================================
+           KODE BARU: 3D KOTAK STATISTIK PUBLIK
+           ========================================= */
+        .stat-card-blue {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            box-shadow: 0 15px 30px -5px rgba(29, 78, 216, 0.4), inset 0 2px 3px rgba(255, 255, 255, 0.3), inset 0 -3px 5px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-card-purple {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            box-shadow: 0 15px 30px -5px rgba(109, 40, 217, 0.4), inset 0 2px 3px rgba(255, 255, 255, 0.3), inset 0 -3px 5px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-card-emerald {
+            background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+            box-shadow: 0 15px 30px -5px rgba(4, 120, 87, 0.4), inset 0 2px 3px rgba(255, 255, 255, 0.3), inset 0 -3px 5px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-card-orange {
+            background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
+            box-shadow: 0 15px 30px -5px rgba(180, 83, 9, 0.4), inset 0 2px 3px rgba(255, 255, 255, 0.3), inset 0 -3px 5px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
     </style>
 
     <section class="relative bg-hero-pattern pt-20 pb-32 lg:pt-28 lg:pb-40 overflow-hidden">
@@ -118,21 +153,20 @@
                 <div class="w-full lg:w-5/12 reveal active delay-200">
                     <div
                         class="animate-float rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20 relative h-[250px] lg:h-[350px]">
-                        <div id="hero-slider" class="w-full h-full relative">
-                            <img src="{{ asset('images/tapanuliselatans.jpg') }}"
-                                class="slider-image absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 opacity-100">
-
-                            <img src="{{ asset('images/bphdprd.png') }}"
-                                class="slider-image absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 opacity-0">
-
-                            {{-- <img src="{{ asset('images/slider3.jpg') }}"
-                                class="slider-image absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 opacity-0">
-
-                            <img src="{{ asset('images/slider4.jpg') }}"
-                                class="slider-image absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 opacity-0">
-
-                            <img src="{{ asset('images/slider5.png') }}"
-                                class="slider-image absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 opacity-0"> --}}
+                        <div class="swiper heroSwiper w-full h-full relative cursor-grab active:cursor-grabbing">
+                            <div class="swiper-wrapper">
+                                <!-- Slide 1 -->
+                                <div class="swiper-slide">
+                                    <img src="{{ asset('images/tapanuliselatans.jpg') }}"
+                                        class="w-full h-full object-cover">
+                                </div>
+                                <!-- Slide 2 -->
+                                <div class="swiper-slide">
+                                    <img src="{{ asset('images/bphdprd.png') }}" class="w-full h-full object-cover">
+                                </div>
+                            </div>
+                            <!-- Pagination -->
+                            <div class="swiper-pagination"></div>
                         </div>
                     </div>
                 </div>
@@ -141,52 +175,66 @@
         </div>
     </section>
 
+    <!-- SECTION STATISTIK 3D -->
     <section class="relative z-10 -mt-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
-            <!-- Kotak 1: Anggota DPRD (Dinamis) -->
-            <div
-                class="bg-white rounded-xl shadow-xl p-6 text-center transform hover:-translate-y-2 transition duration-300 border border-gray-100 reveal">
-                <div
-                    class="w-12 h-12 mx-auto bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl mb-3">
-                    <i class="fa-solid fa-user-tie"></i>
+            
+            <!-- Kotak 1: Anggota DPRD -->
+            <div class="stat-card-blue relative overflow-hidden rounded-2xl p-6 text-center transform hover:-translate-y-2 hover:scale-[1.03] transition-all duration-300 group reveal cursor-default">
+                <!-- Watermark Background -->
+                <i class="fa-solid fa-user-tie absolute -right-4 -bottom-4 text-7xl opacity-20 transform group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500 text-white"></i>
+                
+                <div class="relative z-10 flex flex-col items-center">
+                    <div class="w-14 h-14 bg-white/20 text-white rounded-full flex items-center justify-center text-2xl mb-3 backdrop-blur-md border border-white/30 shadow-inner">
+                        <i class="fa-solid fa-user-tie drop-shadow-md"></i>
+                    </div>
+                    <h3 class="text-4xl font-black text-white mb-1 drop-shadow-lg tracking-tight">{{ $jumlah_anggota }}</h3>
+                    <p class="text-xs font-bold text-white/90 uppercase tracking-wider drop-shadow-sm mt-1" style="color:white">Anggota DPRD</p>
                 </div>
-                <h3 class="text-3xl font-bold text-gray-900 mb-1">{{ $jumlah_anggota }}</h3>
-                <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Anggota DPRD</p>
             </div>
 
-            <!-- Kotak 2: Komisi (MANUAL/STATIS) -->
-            <div
-                class="bg-white rounded-xl shadow-xl p-6 text-center transform hover:-translate-y-2 transition duration-300 border border-gray-100 reveal delay-100">
-                <div
-                    class="w-12 h-12 mx-auto bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl mb-3">
-                    <i class="fa-solid fa-building-user"></i>
+            <!-- Kotak 2: Komisi -->
+            <div class="stat-card-purple relative overflow-hidden rounded-2xl p-6 text-center transform hover:-translate-y-2 hover:scale-[1.03] transition-all duration-300 group reveal delay-100 cursor-default">
+                <!-- Watermark Background -->
+                <i class="fa-solid fa-building-user absolute -right-4 -bottom-4 text-7xl opacity-20 transform group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-500 text-white"></i>
+                
+                <div class="relative z-10 flex flex-col items-center">
+                    <div class="w-14 h-14 bg-white/20 text-white rounded-full flex items-center justify-center text-2xl mb-3 backdrop-blur-md border border-white/30 shadow-inner">
+                        <i class="fa-solid fa-building-user drop-shadow-md"></i>
+                    </div>
+                    <h3 class="text-4xl font-black text-white mb-1 drop-shadow-lg tracking-tight">3</h3>
+                    <p class="text-xs font-bold text-white/90 uppercase tracking-wider drop-shadow-sm mt-1" style="color:white">Komisi</p>
                 </div>
-                <!-- Silakan ubah angka 11 di bawah ini secara manual sesuai kebutuhan -->
-                <h3 class="text-3xl font-bold text-gray-900 mb-1">3</h3>
-                <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Komisi</p>
             </div>
 
-            <!-- Kotak 3: Aspirasi (Dinamis) -->
-            <div
-                class="bg-white rounded-xl shadow-xl p-6 text-center transform hover:-translate-y-2 transition duration-300 border border-gray-100 reveal delay-200">
-                <div
-                    class="w-12 h-12 mx-auto bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl mb-3">
-                    <i class="fa-solid fa-comments"></i>
+            <!-- Kotak 3: Aspirasi -->
+            <div class="stat-card-emerald relative overflow-hidden rounded-2xl p-6 text-center transform hover:-translate-y-2 hover:scale-[1.03] transition-all duration-300 group reveal delay-200 cursor-default">
+                <!-- Watermark Background -->
+                <i class="fa-solid fa-comments absolute -right-4 -bottom-4 text-7xl opacity-20 transform group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500 text-white"></i>
+                
+                <div class="relative z-10 flex flex-col items-center">
+                    <div class="w-14 h-14 bg-white/20 text-white rounded-full flex items-center justify-center text-2xl mb-3 backdrop-blur-md border border-white/30 shadow-inner">
+                        <i class="fa-solid fa-comments drop-shadow-md"></i>
+                    </div>
+                    <h3 class="text-4xl font-black text-white mb-1 drop-shadow-lg tracking-tight">{{ number_format($jumlah_aspirasi, 0, ',', '.') }}</h3>
+                    <p class="text-xs font-bold text-white/90 uppercase tracking-wider drop-shadow-sm mt-1" style="color:white">Aspirasi Diterima</p>
                 </div>
-                <h3 class="text-3xl font-bold text-gray-900 mb-1">{{ number_format($jumlah_aspirasi, 0, ',', '.') }}</h3>
-                <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Aspirasi Diterima</p>
             </div>
 
-            <!-- Kotak 4: Perda (Dinamis) -->
-            <div
-                class="bg-white rounded-xl shadow-xl p-6 text-center transform hover:-translate-y-2 transition duration-300 border border-gray-100 reveal delay-300">
-                <div
-                    class="w-12 h-12 mx-auto bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl mb-3">
-                    <i class="fa-solid fa-file-signature"></i>
+            <!-- Kotak 4: Perda -->
+            <div class="stat-card-orange relative overflow-hidden rounded-2xl p-6 text-center transform hover:-translate-y-2 hover:scale-[1.03] transition-all duration-300 group reveal delay-300 cursor-default">
+                <!-- Watermark Background -->
+                <i class="fa-solid fa-file-signature absolute -right-4 -bottom-4 text-7xl opacity-20 transform group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-500 text-white"></i>
+                
+                <div class="relative z-10 flex flex-col items-center">
+                    <div class="w-14 h-14 bg-white/20 text-white rounded-full flex items-center justify-center text-2xl mb-3 backdrop-blur-md border border-white/30 shadow-inner">
+                        <i class="fa-solid fa-file-signature drop-shadow-md"></i>
+                    </div>
+                    <h3 class="text-4xl font-black text-white mb-1 drop-shadow-lg tracking-tight">{{ $jumlah_perda }}</h3>
+                    <p class="text-xs font-bold text-white/90 uppercase tracking-wider drop-shadow-sm mt-1" style="color:white">Perda Disahkan</p>
                 </div>
-                <h3 class="text-3xl font-bold text-gray-900 mb-1">{{ $jumlah_perda }}</h3>
-                <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Perda Disahkan</p>
             </div>
+
         </div>
     </section>
 
@@ -268,13 +316,12 @@
         <div class="absolute inset-0 bg-blue-700/80 backdrop-blur-sm"></div>
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 reveal">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 divide-y md:divide-y-0 md:divide-x divide-white/20">
-                <!-- FIXED ROUTE NAME BELOW -->
                 <a href="{{ route('publik.agenda') }}"
                     class="flex flex-col items-center text-white p-6 hover:bg-white/10 rounded-lg transition transform hover:scale-105">
                     <i class="fa-regular fa-calendar-check text-4xl mb-3"></i>
                     <span class="font-bold">Agenda Kegiatan</span>
                 </a>
-                <a href="#"
+                <a href="https://youtube.com/@kominfotapsel?si=jeTDCBDvnA1amquC"
                     class="flex flex-col items-center text-white p-6 hover:bg-white/10 rounded-lg transition transform hover:scale-105">
                     <i class="fa-brands fa-youtube text-4xl mb-3"></i>
                     <span class="font-bold">YouTube DPRD</span>
@@ -288,7 +335,6 @@
         </div>
     </section>
 
-    <!-- SECTION BERITA TERKINI (SUDAH DINAMIS) -->
     <section class="py-20 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col sm:flex-row justify-between items-end mb-10 gap-4 reveal">
@@ -355,20 +401,23 @@
         </div>
     </section>
 
+    <!-- Panggil Javascript Swiper -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const images = document.querySelectorAll('.slider-image');
-            let currentIndex = 0;
-
-            if (images.length > 0) {
-                setInterval(() => {
-                    images[currentIndex].classList.remove('opacity-100');
-                    images[currentIndex].classList.add('opacity-0');
-                    currentIndex = (currentIndex + 1) % images.length;
-                    images[currentIndex].classList.remove('opacity-0');
-                    images[currentIndex].classList.add('opacity-100');
-                }, 4000);
-            }
+            var heroSwiper = new Swiper(".heroSwiper", {
+                loop: true,
+                grabCursor: true,
+                effect: "slide",
+                autoplay: {
+                    delay: 3500, // Geser setiap 3.5 detik
+                    disableOnInteraction: false,
+                },
+                pagination: {
+                    el: ".swiper-pagination",
+                    clickable: true,
+                },
+            });
 
             const revealElements = document.querySelectorAll('.reveal');
             const revealObserver = new IntersectionObserver((entries, observer) => {

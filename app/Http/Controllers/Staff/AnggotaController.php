@@ -39,8 +39,13 @@ class AnggotaController extends Controller
             'dapil'               => 'required|string|max:255',
             'komisi'              => 'nullable|string',
             'jabatan_komisi'      => 'nullable|string',
-            'badan'               => 'nullable|string',
-            'jabatan_badan'       => 'nullable|string',
+            
+            // Validasi badan sebagai array
+            'badan'               => 'nullable|array',
+            'badan.*'             => 'nullable|string',
+            'jabatan_badan'       => 'nullable|array',
+            'jabatan_badan.*'     => 'nullable|string',
+            
             'tanggal_lahir'       => 'nullable|date',
             'telepon'             => 'nullable|string',
             'email'               => 'nullable|email',
@@ -55,6 +60,14 @@ class AnggotaController extends Controller
                 $validated['foto'] = $request->file('foto')->store('anggota_fotos', 'public');
             }
 
+            // PROSES ARRAY BADAN MENJADI JSON (Akan di-handle oleh $casts di Model, tapi kita bersihkan data kosongnya)
+            $badanArray = array_filter($request->badan ?? []);
+            $jabatanBadanArray = array_filter($request->jabatan_badan ?? []);
+            
+            // Karena sudah pakai $casts => 'array', kita bisa langsung assign array-nya (jangan di-json_encode manual)
+            $validated['badan'] = !empty($badanArray) ? array_values($badanArray) : null;
+            $validated['jabatan_badan'] = !empty($jabatanBadanArray) ? array_values($jabatanBadanArray) : null;
+
             Anggota::create($validated);
 
             // CATAT LOG SUKSES
@@ -63,7 +76,6 @@ class AnggotaController extends Controller
             return redirect()->route('staff.anggota.index')->with('success', 'Data Anggota berhasil ditambahkan!');
 
         } catch (\Exception $e) {
-            
             // CATAT LOG GAGAL
             ActivityLog::record('Anggota', 'FAILED_CREATE_ANGGOTA', "Gagal menambahkan data anggota. Error: " . $e->getMessage(), 'error');
             
@@ -90,8 +102,13 @@ class AnggotaController extends Controller
             'dapil'               => 'required|string|max:255',
             'komisi'              => 'nullable|string',
             'jabatan_komisi'      => 'nullable|string',
-            'badan'               => 'nullable|string',
-            'jabatan_badan'       => 'nullable|string',
+            
+            // Validasi badan sebagai array
+            'badan'               => 'nullable|array',
+            'badan.*'             => 'nullable|string',
+            'jabatan_badan'       => 'nullable|array',
+            'jabatan_badan.*'     => 'nullable|string',
+            
             'tanggal_lahir'       => 'nullable|date',
             'telepon'             => 'nullable|string',
             'email'               => 'nullable|email',
@@ -109,6 +126,14 @@ class AnggotaController extends Controller
                 $validated['foto'] = $request->file('foto')->store('anggota_fotos', 'public');
             }
 
+            // PROSES ARRAY BADAN
+            $badanArray = array_filter($request->badan ?? []);
+            $jabatanBadanArray = array_filter($request->jabatan_badan ?? []);
+            
+            // Assign array yang sudah dibersihkan (Model akan mengurus json_encode-nya berkat $casts)
+            $validated['badan'] = !empty($badanArray) ? array_values($badanArray) : null;
+            $validated['jabatan_badan'] = !empty($jabatanBadanArray) ? array_values($jabatanBadanArray) : null;
+
             $anggota->update($validated);
 
             // CATAT LOG SUKSES
@@ -117,7 +142,6 @@ class AnggotaController extends Controller
             return redirect()->route('staff.anggota.index')->with('success', 'Data Anggota berhasil diperbarui!');
 
         } catch (\Exception $e) {
-            
             // CATAT LOG GAGAL
             ActivityLog::record('Anggota', 'FAILED_UPDATE_ANGGOTA', "Gagal memperbarui data anggota (ID: {$id}). Error: " . $e->getMessage(), 'error');
             
@@ -143,7 +167,6 @@ class AnggotaController extends Controller
             return redirect()->route('staff.anggota.index')->with('success', 'Data anggota berhasil dihapus!');
 
         } catch (\Exception $e) {
-            
             // CATAT LOG GAGAL
             ActivityLog::record('Anggota', 'FAILED_DELETE_ANGGOTA', "Gagal menghapus data anggota (ID: {$id}). Error: " . $e->getMessage(), 'error');
             

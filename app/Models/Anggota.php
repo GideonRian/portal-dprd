@@ -4,11 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\Auditable; // <-- 1. TAMBAHKAN IMPORT INI
+use App\Traits\Auditable;
 
 class Anggota extends Model
 {
-    use HasFactory, Auditable; // <-- 2. GABUNGKAN DI SEBELAH HASFACTORY
+    use HasFactory, Auditable;
 
     // Mendefinisikan secara ketat kolom apa saja yang boleh diisi dari Form
     protected $fillable = [
@@ -27,5 +27,11 @@ class Anggota extends Model
         'riwayat_pendidikan',
         'riwayat_pekerjaan',
         'riwayat_penghargaan',
+    ];
+
+    // Tambahkan casting agar array otomatis menjadi JSON di database dan sebaliknya
+    protected $casts = [
+        'badan' => 'array',
+        'jabatan_badan' => 'array',
     ];
 }

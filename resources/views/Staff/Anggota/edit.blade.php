@@ -29,13 +29,16 @@
                 <div class="mb-8">
                     <label class="block text-sm font-bold text-gray-700 mb-3">Foto Profil <span
                             class="text-gray-400 font-normal">(Opsional)</span></label>
-                    @if ($anggota->foto)
-                        <div class="mb-4">
-                            <img src="{{ asset('storage/' . $anggota->foto) }}" alt="Foto Lama"
-                                class="w-24 h-24 object-cover rounded-2xl border border-gray-200 shadow-sm">
-                        </div>
-                    @endif
-                    <input type="file" name="foto" accept="image/*"
+                    
+                    {{-- Container Preview Foto --}}
+                    <div id="preview-container" class="mb-4 {{ $anggota->foto ? '' : 'hidden' }}">
+                        <img id="foto-preview" 
+                             src="{{ $anggota->foto ? asset('storage/' . $anggota->foto) : '#' }}" 
+                             alt="Preview Foto"
+                             class="w-24 h-24 object-cover rounded-2xl border border-gray-200 shadow-sm">
+                    </div>
+
+                    <input type="file" name="foto" id="foto-input" accept="image/*"
                         class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
                     <p class="text-xs text-gray-400 mt-2">Biarkan kosong jika tidak ingin mengubah foto lama. (Maks 2MB)</p>
                 </div>
@@ -106,59 +109,91 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Komisi <span
-                                class="text-gray-400 font-normal">(Opsional)</span></label>
-                        <div class="relative mb-3">
-                            <select name="komisi"
-                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition appearance-none bg-white">
-                                <option value="" {{ old('komisi', $anggota->komisi) == '' ? 'selected' : '' }}>--
-                                    Kosongkan / Tidak Ada --</option>
-                                <option value="Komisi A"
-                                    {{ old('komisi', $anggota->komisi) == 'Komisi A' ? 'selected' : '' }}>Komisi A</option>
-                                <option value="Komisi B"
-                                    {{ old('komisi', $anggota->komisi) == 'Komisi B' ? 'selected' : '' }}>Komisi B</option>
-                                <option value="Komisi C"
-                                    {{ old('komisi', $anggota->komisi) == 'Komisi C' ? 'selected' : '' }}>Komisi C</option>
-                            </select>
-                            <i
-                                class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                {{-- ALAT KELENGKAPAN DEWAN (Diubah strukturnya agar dinamis) --}}
+                <div class="space-y-8 mb-6 bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                    
+                    {{-- KOMISI --}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Komisi <span
+                                    class="text-gray-400 font-normal">(Opsional)</span></label>
+                            <div class="relative">
+                                <select name="komisi"
+                                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition appearance-none bg-white">
+                                    <option value="" {{ old('komisi', $anggota->komisi) == '' ? 'selected' : '' }}>-- Kosongkan / Tidak Ada --</option>
+                                    <option value="Komisi A" {{ old('komisi', $anggota->komisi) == 'Komisi A' ? 'selected' : '' }}>Komisi A</option>
+                                    <option value="Komisi B" {{ old('komisi', $anggota->komisi) == 'Komisi B' ? 'selected' : '' }}>Komisi B</option>
+                                    <option value="Komisi C" {{ old('komisi', $anggota->komisi) == 'Komisi C' ? 'selected' : '' }}>Komisi C</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                            </div>
                         </div>
-                        <input type="text" name="jabatan_komisi"
-                            value="{{ old('jabatan_komisi', $anggota->jabatan_komisi) }}"
-                            placeholder="Sbg: Ketua / Wakil / Anggota"
-                            class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Jabatan di Komisi</label>
+                            <input type="text" name="jabatan_komisi"
+                                value="{{ old('jabatan_komisi', $anggota->jabatan_komisi) }}"
+                                placeholder="Sbg: Ketua / Wakil / Anggota"
+                                class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        </div>
                     </div>
 
+                    <hr class="border-gray-200">
+
+                    {{-- BADAN DEWAN (ARRAY) --}}
                     <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Badan Dewan <span
-                                class="text-gray-400 font-normal">(Opsional)</span></label>
-                        <div class="relative mb-3">
-                            <select name="badan"
-                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition appearance-none bg-white">
-                                <option value="" {{ old('badan', $anggota->badan) == '' ? 'selected' : '' }}>--
-                                    Kosongkan / Tidak Ada --</option>
-                                <option value="Badan Anggaran (Banggar)"
-                                    {{ old('badan', $anggota->badan) == 'Badan Anggaran (Banggar)' ? 'selected' : '' }}>
-                                    Badan Anggaran (Banggar)</option>
-                                <option value="Badan Musyawarah (Banmus)"
-                                    {{ old('badan', $anggota->badan) == 'Badan Musyawarah (Banmus)' ? 'selected' : '' }}>
-                                    Badan Musyawarah (Banmus)</option>
-                                <option value="Badan Pembentukan Peraturan Daerah (Bapemperda)"
-                                    {{ old('badan', $anggota->badan) == 'Badan Pembentukan Peraturan Daerah (Bapemperda)' ? 'selected' : '' }}>
-                                    Bapemperda</option>
-                                <option value="Badan Kehormatan (BK)"
-                                    {{ old('badan', $anggota->badan) == 'Badan Kehormatan (BK)' ? 'selected' : '' }}>Badan
-                                    Kehormatan (BK)</option>
-                            </select>
-                            <i
-                                class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Badan Dewan <span class="text-gray-400 font-normal">(Bisa pilih lebih dari satu)</span></label>
+                        
+                        <div id="badan-container" class="space-y-3">
+                            @php
+                                // Ambil data old() jika ada error validasi, jika tidak ambil dari database
+                                $badanArray = old('badan', $anggota->badan ?? []);
+                                $jabatanBadanArray = old('jabatan_badan', $anggota->jabatan_badan ?? []);
+                                
+                                // Pastikan selalu ada minimal 1 form (kosong) jika data sebelumnya kosong
+                                if (empty($badanArray)) {
+                                    $badanArray = [''];
+                                }
+                            @endphp
+
+                            @foreach ($badanArray as $index => $badanVal)
+                                @php
+                                    $jabatanVal = $jabatanBadanArray[$index] ?? '';
+                                @endphp
+                                <div class="badan-row flex items-center gap-3">
+                                    <div class="relative w-1/2">
+                                        <select name="badan[]" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition appearance-none bg-white">
+                                            <option value="">-- Pilih Badan Dewan --</option>
+                                            <option value="Badan Anggaran (Banggar)" {{ $badanVal == 'Badan Anggaran (Banggar)' ? 'selected' : '' }}>Badan Anggaran (Banggar)</option>
+                                            <option value="Badan Musyawarah (Banmus)" {{ $badanVal == 'Badan Musyawarah (Banmus)' ? 'selected' : '' }}>Badan Musyawarah (Banmus)</option>
+                                            <option value="Badan Pembentukan Peraturan Daerah (Bapemperda)" {{ $badanVal == 'Badan Pembentukan Peraturan Daerah (Bapemperda)' ? 'selected' : '' }}>Bapemperda</option>
+                                            <option value="Badan Kehormatan (BK)" {{ $badanVal == 'Badan Kehormatan (BK)' ? 'selected' : '' }}>Badan Kehormatan (BK)</option>
+                                        </select>
+                                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                                    </div>
+                                    
+                                    <div class="relative w-1/2 flex items-center gap-2">
+                                        <select name="jabatan_badan[]" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition appearance-none bg-white">
+                                            <option value="">-- Pilih Jabatan --</option>
+                                            <option value="Ketua" {{ $jabatanVal == 'Ketua' ? 'selected' : '' }}>Ketua</option>
+                                            <option value="Wakil" {{ $jabatanVal == 'Wakil' ? 'selected' : '' }}>Wakil</option>
+                                            <option value="Sekretaris" {{ $jabatanVal == 'Sekretaris' ? 'selected' : '' }}>Sekretaris</option>
+                                            <option value="Anggota" {{ $jabatanVal == 'Anggota' ? 'selected' : '' }}>Anggota</option>
+                                        </select>
+                                        <i class="fa-solid fa-chevron-down absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                                        
+                                        {{-- Tombol Hapus (Disembunyikan jika hanya tersisa 1 baris di index 0) --}}
+                                        <button type="button" class="btn-remove-badan px-4 py-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition {{ count($badanArray) == 1 && $index == 0 ? 'hidden' : '' }}">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
-                        <input type="text" name="jabatan_badan"
-                            value="{{ old('jabatan_badan', $anggota->jabatan_badan) }}"
-                            placeholder="Sbg: Ketua / Wakil / Anggota"
-                            class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
+
+                        {{-- Tombol Tambah Badan --}}
+                        <button type="button" id="btn-add-badan" class="mt-3 text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                            <i class="fa-solid fa-plus-circle"></i> Tambah Posisi Badan Lain
+                        </button>
                     </div>
                 </div>
 
@@ -205,4 +240,66 @@
             </form>
         </div>
     </main>
+
+    {{-- SCRIPT JAVASCRIPT UNTUK DYNAMIC BADAN INPUT & IMAGE PREVIEW --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // === LOGIKA PREVIEW FOTO ===
+            const fotoInput = document.getElementById('foto-input');
+            const fotoPreview = document.getElementById('foto-preview');
+            const previewContainer = document.getElementById('preview-container');
+
+            if (fotoInput) {
+                fotoInput.addEventListener('change', function() {
+                    const file = this.files[0];
+                    if (file) {
+                        // Menampilkan gambar yang baru dipilih
+                        fotoPreview.src = URL.createObjectURL(file);
+                        previewContainer.classList.remove('hidden');
+
+                        // Membersihkan memori browser setelah gambar dimuat (opsional tapi disarankan)
+                        fotoPreview.onload = function() {
+                            URL.revokeObjectURL(fotoPreview.src);
+                        }
+                    }
+                });
+            }
+
+            // === LOGIKA DINAMIS BADAN DEWAN ===
+            const container = document.getElementById('badan-container');
+            const btnAdd = document.getElementById('btn-add-badan');
+
+            // Fungsi pasang event hapus ke tombol
+            function attachRemoveEvent(button) {
+                button.addEventListener('click', function() {
+                    button.closest('.badan-row').remove();
+                });
+            }
+
+            // Pasang event hapus ke semua tombol hapus yang sudah ada dari database
+            container.querySelectorAll('.btn-remove-badan').forEach(btn => {
+                attachRemoveEvent(btn);
+            });
+
+            // Tambah baris baru
+            btnAdd.addEventListener('click', function() {
+                const rows = container.querySelectorAll('.badan-row');
+                const firstRow = rows[0];
+                const newRow = firstRow.cloneNode(true);
+
+                // Bersihkan nilai di baris yang baru diclone
+                newRow.querySelectorAll('select').forEach(select => {
+                    select.value = '';
+                });
+
+                // Tampilkan tombol hapus dan beri event listener
+                const removeBtn = newRow.querySelector('.btn-remove-badan');
+                removeBtn.classList.remove('hidden');
+                attachRemoveEvent(removeBtn);
+
+                // Tambahkan ke container
+                container.appendChild(newRow);
+            });
+        });
+    </script>
 @endsection

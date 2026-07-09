@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth; // <-- WAJIB DITAMBAHKAN UNTUK CEK LOGIN
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,17 +14,19 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         
-        // LOGIKA PENGALIHAN DINAMIS YANG SUDAH DI-UPGRADE
+        // =========================================================
+        // 1. LOGIKA UNTUK USER YANG *BELUM* LOGIN (Unauthenticated)
+        // Jika mencoba akses halaman tertutup, lempar ke form login
+        // =========================================================
         $middleware->redirectTo(function (Request $request) {
             
-            // 1. Anti-Bug untuk interaksi JavaScript / API
+            // Anti-Bug untuk interaksi JavaScript / API
             if ($request->expectsJson()) {
                 return null; 
             }
 
-            // 2. Pemisahan jalur yang presisi
+            // Pemisahan jalur yang presisi
             if ($request->is('superadmin*')) {
-                // Pastikan nama route ini sesuai dengan yang ada di routes/web.php Anda
                 return route('superadmin.login'); 
             }
 
@@ -34,9 +37,46 @@ return Application::configure(basePath: dirname(__DIR__))
             // Fallback default jika mengakses halaman lain
             return route('staff.login');
         });
+
+       
+        // 2. LOGIKA UNTUK USER YANG *SUDAH* LOGIN (Authenticated)
+        // Jika iseng buka halaman login, lempar kembali ke dashboard
+        $middleware->redirectUsersTo(function (Request $request) {
+            if (Auth::check()) {
+                $userRole = strtolower(Auth::user()->role ?? '');
+                $userName = strtolower(Auth::user()->username ?? '');
+
+                // Jika SuperAdmin belum lulus 2FA tapi mencoba membuka halaman login lagi,
+                // maka kita HANCURKAN sesinya secara paksa agar bisa mengulang dari logijn.
+                if (($userRole === 'superadmin' || $userName === 'superadmin') && session('2fa_verified') === false) {
+                    Auth::logout();
+                    $request->session()->invalidate();
+                    $request->session()->regenerateToken();
+                    
+                    return route('superadmin.login');
+                }
+                // ---------------------------------------------------
+
+                // Arahkan ke Dashboard masing-masing sesuai hak aksesnya
+                if ($userRole === 'superadmin' || $userName === 'superadmin') {
+                    return route('superadmin.dashboard');
+                } elseif ($userRole === 'sekretaris') {
+                    return route('sekretaris.dashboard');
+                } elseif ($userRole === 'staff') {
+                    return route('staff.dashboard');
+                }
+            }
+            
+            // Default jika entah bagaimana role tidak terbaca
+            return '/'; 
+        });
         
+        // =========================================================
+        // 3. DAFTAR MIDDLEWARE ALIAS
+        // =========================================================
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
+            '2fa'  => \App\Http\Middleware\Ensure2FA::class,
         ]);
 
     })

@@ -5,22 +5,20 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Berita;
+use Illuminate\Support\Facades\Cache; // <-- Tambahkan ini untuk pelacakan IP
 
 class BeritaController extends Controller
 {
     // Halaman Daftar Berita (Publik)
     public function index(Request $request)
     {
-        // 1. Ambil Berita Featured HANYA jika tidak ada request pencarian
         $featured = null;
         if (!$request->filled('search')) {
             $featured = Berita::where('is_featured', true)->latest()->first();
         }
 
-        // 2. Mulai Query Data Berita
         $query = Berita::latest();
 
-        // 3. Logika Filter Pencarian Dinamis (DIperbaiki: Hapus isi_berita)
         if ($request->filled('search')) {
             $searchTerm = $request->search;
             $query->where(function($q) use ($searchTerm) {
@@ -30,52 +28,81 @@ class BeritaController extends Controller
             });
         }
 
-        // 4. Ambil Data menggunakan Paginasi (9 Berita per halaman)
         $beritas = $query->paginate(9);
 
         return view('Non-Users.berita', compact('beritas', 'featured'));
     }
 
     // Halaman Detail Berita (Publik)
-    public function show($slug)
+    public function show(Request $request, $slug) 
     {
         $berita = Berita::where('slug', $slug)->firstOrFail();
         
-        // <-- 1. OTOMATISASI VIEW COUNTER: Naikkan jumlah tayangan (+1) setiap kali dibuka
         $berita->increment('views');
         
         $berita_lainnya = Berita::where('id', '!=', $berita->id)->latest()->take(3)->get();
 
-        return view('Non-Users.berita-detail', compact('berita', 'berita_lainnya'));
+        // --- PENGECEKAN STATUS LIKE BERDASARKAN IP & SESSION ---
+        $ipAddress = $request->ip();
+        $cacheKey = 'liked_berita_' . $berita->id . '_ip_' . $ipAddress;
+        $likedInSession = in_array($berita->id, session()->get('liked_beritas', []));
+        
+        // Jika IP ada di Cache ATAU ada di Session, tandai sebagai sudah dilike
+        $hasLiked = Cache::has($cacheKey) || $likedInSession;
+
+        // Lempar variabel $hasLiked ke View
+        return view('Non-Users.berita-detail', compact('berita', 'berita_lainnya', 'hasLiked'));
     }
 
-    // <-- 2. TOMBOL LIKE BERBASIS AJAX & SESSION (Mencegah Spamming Click)
-    public function like($id)
+    // Tombol Like (Toggle: Bisa Like dan Unlike, anti-spam via IP & Session)
+    public function like(Request $request, $id)
     {
         $berita = Berita::findOrFail($id);
         
-        // Ambil daftar ID berita yang sudah pernah di-like oleh user ini dari session browser
+        $ipAddress = $request->ip();
+        $cacheKey = 'liked_berita_' . $id . '_ip_' . $ipAddress;
         $likedBeritas = session()->get('liked_beritas', []);
 
-        // Jika ID berita ini sudah ada di dalam catatan sesi browser, tolak penambahan
-        if (in_array($id, $likedBeritas)) {
+        $hasLikedCache = Cache::has($cacheKey);
+        $hasLikedSession = in_array($id, $likedBeritas);
+
+        // JIKA SUDAH PERNAH LIKE -> PROSES UNLIKE
+        if ($hasLikedCache || $hasLikedSession) {
+            
+            // Kurangi jumlah like (pastikan tidak minus)
+            if ($berita->likes > 0) {
+                $berita->decrement('likes');
+            }
+
+            // Hapus jejak dari Cache
+            Cache::forget($cacheKey);
+            
+            // Hapus jejak dari Session
+            $likedBeritas = array_diff($likedBeritas, [$id]);
+            session()->put('liked_beritas', $likedBeritas);
+
             return response()->json([
-                'success' => false,
-                'message' => 'Anda sudah menyukai berita ini.',
+                'success' => true,
+                'action'  => 'unliked', // Beritahu Javascript bahwa ini proses Unlike
+                'message' => 'Batal menyukai berita.',
+                'likes'   => $berita->likes
+            ]);
+        } 
+        
+        // JIKA BELUM PERNAH LIKE -> PROSES LIKE
+        else {
+            $berita->increment('likes');
+
+            // Simpan jejak ke Cache (1 Tahun) & Session
+            Cache::put($cacheKey, true, now()->addYears(1));
+            session()->push('liked_beritas', $id);
+
+            return response()->json([
+                'success' => true,
+                'action'  => 'liked', // Beritahu Javascript bahwa ini proses Like
+                'message' => 'Berhasil menyukai berita.',
                 'likes'   => $berita->likes
             ]);
         }
-
-        // Jika belum ada, naikkan jumlah likes (+1) di database
-        $berita->increment('likes');
-
-        // Simpan ID berita ini ke dalam catatan sesi browser agar tidak bisa klik lagi
-        session()->push('liked_beritas', $id);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Berhasil menyukai berita.',
-            'likes'   => $berita->likes
-        ]);
     }
 }

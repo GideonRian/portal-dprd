@@ -10,7 +10,6 @@
         <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-4 text-sm text-gray-500">
             <span class="bg-blue-100 text-blue-700 font-bold px-3 py-1 rounded-full">{{ $berita->kategori }}</span>
             <span><i class="fa-regular fa-calendar mr-1"></i>
-                {{-- PERBAIKAN: Penambahan locale('id') agar bulannya bahasa Indonesia --}}
                 {{ \Carbon\Carbon::parse($berita->tanggal)->locale('id')->translatedFormat('d F Y') }}</span>
             <span><i class="fa-regular fa-eye mr-1"></i> {{ number_format($berita->views) }} Tayangan</span>
             <span id="top-likes-counter"><i class="fa-regular fa-thumbs-up mr-1"></i> {{ number_format($berita->likes) }}
@@ -61,15 +60,10 @@
             <div class="w-full md:w-auto text-center md:text-left">
                 <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Dipublikasikan pada</p>
                 <p class="font-bold text-gray-900">
-                    {{-- PERBAIKAN: Penambahan locale('id') agar harinya bahasa Indonesia --}}
                     {{ \Carbon\Carbon::parse($berita->tanggal)->locale('id')->translatedFormat('l, d F Y') }}</p>
             </div>
 
             <div class="flex flex-wrap items-center justify-center gap-3 w-full md:w-auto">
-                @php
-                    // Cek status apakah browser saat ini sudah pernah klik like untuk berita ini
-                    $hasLiked = in_array($berita->id, session()->get('liked_beritas', []));
-                @endphp
 
                 <button id="btn-like-berita" data-id="{{ $berita->id }}"
                     data-status="{{ $hasLiked ? 'liked' : 'unliked' }}"
@@ -137,19 +131,15 @@
             });
 
             // ==========================================
-            // LOGIK HANDLING AJAX FETCH UNTUK TOMBOL LIKE
+            // LOGIK HANDLING AJAX FETCH UNTUK TOMBOL LIKE (BISA TOGGLE)
             // ==========================================
             const likeBtn = document.getElementById('btn-like-berita');
             if (likeBtn) {
                 likeBtn.addEventListener('click', function() {
                     const beritaId = this.getAttribute('data-id');
-                    const status = this.getAttribute('data-status');
 
-                    // Jika sudah pernah di-like, jangan kirim request apa pun ke server
-                    if (status === 'liked') {
-                        alert('Anda sudah menyukai berita ini sebelumnya.');
-                        return;
-                    }
+                    // Menonaktifkan tombol sementara agar tidak diklik spam saat loading
+                    this.disabled = true;
 
                     // Tembak Ajax Request menggunakan Fetch API bawaan browser
                     fetch(`/berita/${beritaId}/like`, {
@@ -163,20 +153,31 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                // 1. Ubah desain tampilan tombol menjadi mode "Sudah Disukai"
-                                this.setAttribute('data-status', 'liked');
-                                this.className =
-                                    "w-full sm:w-auto flex-1 md:flex-none bg-red-50 text-red-600 border-red-200 px-5 py-3 rounded-xl font-bold border transition shadow-sm flex items-center justify-center gap-2";
 
-                                // 2. Ganti teks tombol & ikon hati ke mode solid filling
-                                document.getElementById('text-like-btn').innerText = "Disukai";
-                                this.querySelector('i').className =
-                                    "fa-solid fa-heart text-red-500 text-lg";
+                                // JIKA RESPON SERVER ADALAH 'LIKED' (Proses Suka Berhasil)
+                                if (data.action === 'liked') {
+                                    this.setAttribute('data-status', 'liked');
+                                    this.className =
+                                        "w-full sm:w-auto flex-1 md:flex-none bg-red-50 text-red-600 border-red-200 px-5 py-3 rounded-xl font-bold border transition shadow-sm flex items-center justify-center gap-2";
+                                    document.getElementById('text-like-btn').innerText = "Disukai";
+                                    this.querySelector('i').className =
+                                        "fa-solid fa-heart text-red-500 text-lg";
+                                }
+                                // JIKA RESPON SERVER ADALAH 'UNLIKED' (Proses Batal Suka Berhasil)
+                                else if (data.action === 'unliked') {
+                                    this.setAttribute('data-status', 'unliked');
+                                    this.className =
+                                        "w-full sm:w-auto flex-1 md:flex-none bg-white text-gray-700 border-gray-200 hover:bg-red-50 hover:text-red-600 px-5 py-3 rounded-xl font-bold border transition shadow-sm flex items-center justify-center gap-2";
+                                    document.getElementById('text-like-btn').innerText = "Suka";
+                                    this.querySelector('i').className =
+                                        "fa-regular fa-heart text-red-500 text-lg";
+                                }
 
-                                // 3. Perbarui teks jumlah angka counter di bagian bawah dan atas secara instan
+                                // Perbarui teks jumlah angka counter secara real-time
                                 document.getElementById('bottom-likes-counter').innerText = data.likes;
                                 document.getElementById('top-likes-counter').innerHTML =
                                     `<i class="fa-regular fa-thumbs-up mr-1"></i> ${data.likes} Menyukai`;
+
                             } else {
                                 alert(data.message);
                             }
@@ -184,6 +185,10 @@
                         .catch(error => {
                             console.error('Error:', error);
                             alert('Terjadi kendala koneksi jaringan saat memproses permintaan.');
+                        })
+                        .finally(() => {
+                            // Aktifkan kembali tombol setelah proses selesai
+                            this.disabled = false;
                         });
                 });
             }

@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Request;
 
 class ActivityLog extends Model
 {
-    // Mengizinkan semua kolom diisi massal
+    // Mengizinkan semua kolom diisi massal (termasuk kolom 'status' yang baru)
     protected $guarded = [];
 
     // Relasi ke tabel Users
@@ -22,13 +22,13 @@ class ActivityLog extends Model
     public static function record($module, $action, $description, $status = 'success', $old_data = null, $new_data = null)
     {
         self::create([
-            'user_id'     => \Illuminate\Support\Facades\Auth::check() ? \Illuminate\Support\Facades\Auth::id() : null, 
+            'user_id'     => Auth::check() ? Auth::id() : null, 
             'module'      => $module,
             'action'      => strtoupper($action),
             'description' => $description,
             'status'      => strtolower($status),
-            'ip_address'  => \Illuminate\Support\Facades\Request::ip(),
-            'user_agent'  => \Illuminate\Support\Facades\Request::header('user-agent'),
+            'ip_address'  => Request::ip(),
+            'user_agent'  => Request::header('user-agent'),
             // Simpan array sebagai JSON
             'old_data'    => $old_data ? json_encode($old_data) : null,
             'new_data'    => $new_data ? json_encode($new_data) : null,

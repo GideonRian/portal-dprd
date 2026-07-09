@@ -68,7 +68,7 @@ class AuthController extends Controller
 
     public function editPassword()
     {
-        return view('Pimpinan-Sekretariat.Password.edit');
+        return view('Pimpinan-Sekretariat.password.edit');
     }
 
     public function updatePassword(Request $request)

@@ -11,7 +11,7 @@
                     <i class="fa-regular fa-newspaper text-white text-3xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-extrabold text-gray-900 mb-1">Berita DPRD</h1>
+                    <h1 class="text-3xl font-extrabold text-gray-900 mb-1">Berita & Informasi DPRD</h1>
                     <p class="text-gray-500 font-medium text-sm md:text-base">Kumpulan informasi, kegiatan, dan liputan
                         terbaru dari DPRD Tapanuli Selatan</p>
                 </div>
@@ -69,7 +69,8 @@
                         <span
                             class="bg-purple-100 text-purple-700 font-bold px-3 py-1 rounded-full">{{ $featured->kategori }}</span>
                         <span class="text-gray-500"><i class="fa-regular fa-calendar mr-1"></i>
-                            {{ \Carbon\Carbon::parse($featured->tanggal)->translatedFormat('d F Y') }}</span>
+                            {{-- PENAMBAHAN LOCALE('ID') DI SINI --}}
+                            {{ \Carbon\Carbon::parse($featured->tanggal)->locale('id')->translatedFormat('d F Y') }}</span>
                     </div>
 
                     <h2
@@ -117,7 +118,8 @@
                         <div class="p-6 flex flex-col flex-1">
                             <p class="text-gray-500 text-xs mb-3 font-medium">
                                 <i class="fa-regular fa-calendar mr-1"></i>
-                                {{ \Carbon\Carbon::parse($item->tanggal)->translatedFormat('d F Y') }}
+                                {{-- PENAMBAHAN LOCALE('ID') DI SINI --}}
+                                {{ \Carbon\Carbon::parse($item->tanggal)->locale('id')->translatedFormat('d F Y') }}
                             </p>
                             <h3
                                 class="text-xl font-extrabold text-gray-900 mb-3 leading-snug group-hover:text-purple-600 transition line-clamp-2">

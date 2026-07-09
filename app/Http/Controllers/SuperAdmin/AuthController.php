@@ -6,14 +6,19 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Models\ActivityLog; // JANGAN LUPA IMPORT INI
+use App\Models\ActivityLog;
 
 class AuthController extends Controller
 {
     public function showLoginForm()
     {
         if (Auth::check()) {
-            return redirect()->route('superadmin.dashboard');
+            // Jika sudah login dan SUDAH melewati 2FA, arahkan ke dashboard
+            if (session('2fa_verified') === true) {
+                return redirect()->route('superadmin.dashboard');
+            }
+            // Jika sudah login tapi BELUM melewati 2FA, arahkan ke halaman 2FA
+            return redirect()->route('superadmin.2fa.challenge');
         }
         return view('SuperAdmin.auth.login');
     }
@@ -26,6 +31,10 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt(['username' => $request->username, 'password' => $request->password])) {
+            
+            // TAHAP 1 LULUS: Kredensial benar, tapi berikan status 2FA false (Belum lulus)
+            session(['2fa_verified' => false]);
+            
             return redirect()->route('superadmin.2fa.challenge');
         }
 
@@ -39,6 +48,11 @@ class AuthController extends Controller
 
     public function show2faForm()
     {
+        // Pastikan hanya user yang sudah melewati tahap 1 (login password) yang bisa ke sini
+        if (!Auth::check()) {
+            return redirect()->route('superadmin.login');
+        }
+
         return view('SuperAdmin.auth.2fa_challenge');
     }
 
@@ -57,6 +71,9 @@ class AuthController extends Controller
                 $user->recovery_codes = json_encode(array_values($recoveryCodes));
                 $user->save();
 
+                // TAHAP 2 LULUS: Ubah status sesi menjadi true
+                session(['2fa_verified' => true]);
+
                 ActivityLog::record('Autentikasi', 'LOGIN_2FA', 'SuperAdmin berhasil masuk menggunakan Kode Cadangan.');
                 return redirect()->route('superadmin.dashboard');
             }
@@ -72,6 +89,10 @@ class AuthController extends Controller
             $google2fa = app('pragmarx.google2fa');
             
             if ($google2fa->verifyKey($user->google2fa_secret, $otp)) {
+                
+                // TAHAP 2 LULUS: Ubah status sesi menjadi true
+                session(['2fa_verified' => true]);
+
                 ActivityLog::record('Autentikasi', 'LOGIN_2FA', 'SuperAdmin berhasil masuk menggunakan Google Authenticator.');
                 return redirect()->route('superadmin.dashboard');
             }

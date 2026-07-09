@@ -72,7 +72,7 @@
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Tahun <span
                                 class="text-rose-500">*</span></label>
-                        <input type="number" name="tahun" value="{{ $dokumen->tahun }}" required
+                        <input type="number" name="tahun" value="{{ $dokumen->tahun }}" required min="1900"
                             class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-rose-500 outline-none">
                     </div>
                 </div>

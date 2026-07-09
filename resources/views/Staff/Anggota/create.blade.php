@@ -128,33 +128,53 @@
                             class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
                     </div>
 
-                    <div>
+                    {{-- GANTI BAGIAN BADAN DEWAN DI CREATE.BLADE.PHP MENJADI SEPERTI INI --}}
+                    <div class="col-span-1 md:col-span-2">
                         <label class="block text-sm font-bold text-gray-700 mb-2">Badan Dewan <span
-                                class="text-gray-400 font-normal">(Opsional)</span></label>
-                        <div class="relative mb-3">
-                            <select name="badan"
-                                class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition appearance-none bg-white">
-                                <option value="" {{ old('badan') == '' ? 'selected' : '' }}>-- Kosongkan / Tidak Ada
-                                    --</option>
-                                <option value="Badan Anggaran (Banggar)"
-                                    {{ old('badan') == 'Badan Anggaran (Banggar)' ? 'selected' : '' }}>Badan Anggaran
-                                    (Banggar)</option>
-                                <option value="Badan Musyawarah (Banmus)"
-                                    {{ old('badan') == 'Badan Musyawarah (Banmus)' ? 'selected' : '' }}>Badan Musyawarah
-                                    (Banmus)</option>
-                                <option value="Badan Pembentukan Peraturan Daerah (Bapemperda)"
-                                    {{ old('badan') == 'Badan Pembentukan Peraturan Daerah (Bapemperda)' ? 'selected' : '' }}>
-                                    Bapemperda</option>
-                                <option value="Badan Kehormatan (BK)"
-                                    {{ old('badan') == 'Badan Kehormatan (BK)' ? 'selected' : '' }}>Badan Kehormatan (BK)
-                                </option>
-                            </select>
-                            <i
-                                class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                                class="text-gray-400 font-normal">(Bisa pilih lebih dari satu)</span></label>
+
+                        <div id="badan-container" class="space-y-3">
+                            {{-- Baris Input Pertama --}}
+                            <div class="badan-row flex items-center gap-3">
+                                <div class="relative w-1/2">
+                                    <select name="badan[]"
+                                        class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition appearance-none bg-white">
+                                        <option value="">-- Pilih Badan Dewan --</option>
+                                        <option value="Badan Anggaran (Banggar)">Badan Anggaran (Banggar)</option>
+                                        <option value="Badan Musyawarah (Banmus)">Badan Musyawarah (Banmus)</option>
+                                        <option value="Badan Pembentukan Peraturan Daerah (Bapemperda)">Bapemperda</option>
+                                        <option value="Badan Kehormatan (BK)">Badan Kehormatan (BK)</option>
+                                    </select>
+                                    <i
+                                        class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                                </div>
+
+                                <div class="relative w-1/2 flex items-center gap-2">
+                                    <select name="jabatan_badan[]"
+                                        class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition appearance-none bg-white">
+                                        <option value="">-- Pilih Jabatan --</option>
+                                        <option value="Ketua">Ketua</option>
+                                        <option value="Wakil">Wakil</option>
+                                        <option value="Sekretaris">Sekretaris</option>
+                                        <option value="Anggota">Anggota</option>
+                                    </select>
+                                    <i
+                                        class="fa-solid fa-chevron-down absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+
+                                    {{-- Tombol Hapus (Disembunyikan untuk baris pertama) --}}
+                                    <button type="button"
+                                        class="btn-remove-badan hidden px-4 py-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <input type="text" name="jabatan_badan" value="{{ old('jabatan_badan') }}"
-                            placeholder="Sbg: Ketua / Wakil / Anggota"
-                            class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
+
+                        {{-- Tombol Tambah Badan --}}
+                        <button type="button" id="btn-add-badan"
+                            class="mt-3 text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                            <i class="fa-solid fa-plus-circle"></i> Tambah Posisi Badan Lain
+                        </button>
                     </div>
                 </div>
 
@@ -201,4 +221,33 @@
             </form>
         </div>
     </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('badan-container');
+            const btnAdd = document.getElementById('btn-add-badan');
+
+            btnAdd.addEventListener('click', function() {
+                // Clone baris pertama
+                const firstRow = container.querySelector('.badan-row');
+                const newRow = firstRow.cloneNode(true);
+
+                // Reset nilai select di baris baru
+                newRow.querySelectorAll('select').forEach(select => {
+                    select.value = '';
+                });
+
+                // Tampilkan tombol hapus di baris baru
+                const removeBtn = newRow.querySelector('.btn-remove-badan');
+                removeBtn.classList.remove('hidden');
+
+                // Tambahkan event listener untuk tombol hapus
+                removeBtn.addEventListener('click', function() {
+                    newRow.remove();
+                });
+
+                // Tambahkan ke container
+                container.appendChild(newRow);
+            });
+        });
+    </script>
 @endsection
