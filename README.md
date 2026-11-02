@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=250&section=header&text=Portal%20Aspirasi%20DPRD&fontSize=50&fontAlignY=35" alt="Header Banner">
 
-  # 🏛️ Sistem Informasi Aspirasi Masyarakat - DPRD Tapanuli Selatan
+  # 🏛️ Sistem Informasi Aspirasi Masyarakat - DPRD Tapanuli Selatan [!(https://id.wikipedia.org/wiki/Berkas:Lambang_Kabupaten_Tapanuli_Selatan.png)]
   
   **Membangun Jembatan Digital antara Masyarakat dan Wakil Rakyat** 🌉
 
