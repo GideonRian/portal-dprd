@@ -11,6 +11,7 @@
 </div>
 
 ---
+## 🎥 Video Demo : https://drive.google.com/file/d/1lMkumEA7iIDvbtj6X2TbjsYbvfiOlvX9/view?usp=sharing
 
 ## 📖 Tentang Proyek
 Sistem Informasi ini merupakan inisiatif *E-Government* yang dirancang khusus untuk Dewan Perwakilan Rakyat Daerah (DPRD) Tapanuli Selatan. Platform ini memfasilitasi transparansi dan komunikasi dua arah, memungkinkan masyarakat untuk mengajukan aspirasi, keluhan, atau saran secara digital, sekaligus memantau sejauh mana aspirasi tersebut diproses oleh dewan.
